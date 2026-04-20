@@ -1,76 +1,117 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import '../controller/ai_controller.dart';
 
-class WellbeingView extends StatelessWidget {
+class ResultScreen extends StatelessWidget {
   final AIController controller = Get.put(AIController());
 
-  // Helper to create input fields
-  Widget _buildInputField(String label, int index, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextField(
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-        onChanged: (val) {
-          // Update the specific feature index in the controller
-          controller.liveInputs[index] = double.tryParse(val) ?? 0.0;
-        },
-      ),
-    );
+  ResultScreen({super.key});
+
+  Color getRiskColor(double score) {
+    if (score > 0.7) return Colors.red;
+    if (score > 0.3) return Colors.orange;
+    return Colors.green;
+  }
+
+  String getRiskText(double score) {
+    if (score > 0.7) return "High Risk";
+    if (score > 0.3) return "Moderate Risk";
+    return "Low Risk";
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("AI Digital Wellbeing")),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+      appBar: AppBar(title: const Text("Your Wellbeing")),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // RISK DISPLAY
+            // 🔥 RISK CARD
+            Obx(() {
+              final score = controller.riskScore.value;
+              final color = getRiskColor(score);
+
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  children: [
+                    Text("Your Risk Score", style: TextStyle(fontSize: 16)),
+                    const SizedBox(height: 10),
+
+                    Text(
+                      "${(score * 100).toStringAsFixed(1)}%",
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    Text(
+                      getRiskText(score),
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: color,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+
+            const SizedBox(height: 30),
+
+            // 💡 RECOMMENDATION
             Obx(
-              () => Card(
-                color: controller.riskScore.value > 0.7
-                    ? Colors.red[50]
-                    : Colors.green[50],
-                child: ListTile(
-                  title: Text(
-                    "Addiction Risk: ${(controller.riskScore.value * 100).toStringAsFixed(1)}%",
-                  ),
-                  subtitle: Text(controller.recommendation.value),
+              () => Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  controller.recommendation.value,
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
             ),
 
-            SizedBox(height: 20),
-            Text(
-              "Enter Today's Metrics:",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            const Spacer(),
 
-            // THE 12 FEATURES (Examples based on your map)
-            _buildInputField("Age", 0, Icons.person),
-            _buildInputField("Sleep Hours", 1, Icons.bed),
-            _buildInputField("Social Media (Hrs)", 2, Icons.phone_android),
-            _buildInputField("App Opens", 10, Icons.touch_app),
-
-            // ... add the rest here ...
-            SizedBox(height: 20),
-
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-              ),
-              onPressed: () => controller.runRealInference(),
-              child: Obx(
-                () => controller.isProcessing.value
-                    ? CircularProgressIndicator()
-                    : Text("Run AI Analysis"),
+            // 🚀 BUTTON
+            Obx(
+              () => SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  onPressed: controller.isProcessing.value
+                      ? null
+                      : () async {
+                          await controller.runInference();
+                        },
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: controller.isProcessing.value
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          "Analyze My Usage",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                ),
               ),
             ),
           ],

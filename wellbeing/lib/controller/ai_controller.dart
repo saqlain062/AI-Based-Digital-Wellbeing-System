@@ -1,141 +1,199 @@
 import 'dart:developer';
-
-import 'package:get/get.dart';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:onnxruntime_v2/onnxruntime_v2.dart';
 
+import '../services/category_service.dart';
+import '../services/usage_feature_service.dart';
+
 class AIController extends GetxController {
-  // Reactive variables (.obs)
+  // ==========================
+  // 🔹 STATE
+  // ==========================
   var riskScore = 0.0.obs;
   var isModelLoaded = false.obs;
   var isProcessing = false.obs;
-  // 1. Storage for the 12 User Inputs (Initialized to 0.0)
-  var liveInputs = List<double>.filled(12, 0.0).obs;
   var recommendation = "Waiting for data...".obs;
+
   OrtSession? _session;
 
-  // 2. Updated inference to use the liveInputs
-  Future<void> runRealInference() async {
-    await runInference(liveInputs.toList());
-    _generateNudge();
-  }
+  // ==========================
+  // 🔹 FEATURE STORAGE
+  // ==========================
 
-  void _generateNudge() {
-    double score = riskScore.value;
-    double socialMedia = liveInputs[2]; // Index 2 from your feature map
-    double sleep = liveInputs[1]; // Index 1
+  /// Full 12 features (MODEL INPUT)
+  var features = List<double>.filled(12, 0.0).obs;
 
-    if (score > 0.7) {
-      if (socialMedia > 4)
-        recommendation.value =
-            "🚨 High Risk: Social media is your main trigger.";
-      else if (sleep < 6)
-        recommendation.value =
-            "🚨 High Risk: Lack of sleep is driving dependency.";
-      else
-        recommendation.value = "🚨 High Risk: General habit correction needed.";
-    } else {
-      recommendation.value = "✅ Low/Moderate Risk: Your habits are stable.";
-    }
-  }
+  /// Feature Index Map (VERY IMPORTANT)
+  final featureIndex = {
+    "age": 0,
+    "sleep_hours": 1,
+    "social_media_hours": 2,
+    "gaming_hours": 3,
+    "daily_screen_time": 4,
+    "work_study_hours": 5,
+    "notifications": 6,
+    "app_opens": 7,
+    "weekend_screen": 8,
+    "stress_level": 9,
+    "academic_impact": 10,
+    "gender": 11,
+  };
 
+  // ==========================
+  // 🔹 INIT MODEL
+  // ==========================
   @override
-  void onInit() {
-    super.onInit();
-    _initModel();
+  void onReady() {
+    super.onReady();
+
+    _initModel(); // ✅ safe here
   }
 
-  // Inside AIController
-
-  // Load model once when controller starts
   Future<void> _initModel() async {
     try {
       OrtEnv.instance.init();
-      final sessionOptions = OrtSessionOptions();
-      sessionOptions.appendDefaultProviders(); // Uses GPU/NPU if possible
 
-      final rawAssetFile = await rootBundle.load('assets/wellbeing_model.onnx');
-      final bytes = rawAssetFile.buffer.asUint8List();
+      final sessionOptions = OrtSessionOptions();
+      sessionOptions.appendDefaultProviders();
+
+      final rawAsset = await rootBundle.load('assets/wellbeing_model.onnx');
+      final bytes = rawAsset.buffer.asUint8List();
+
       _session = OrtSession.fromBuffer(bytes, sessionOptions);
 
       isModelLoaded.value = true;
+      log("✅ Model Loaded");
     } catch (e) {
-      Get.snackbar(
-        "Error",
-        "Failed to load AI Brain: $e",
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      log("❌ Model load error: $e");
     }
   }
 
-  // The 12-feature prediction method
-  Future<void> runInference(List<double> userData) async {
-    if (!isModelLoaded.value) return;
+  // ==========================
+  // 🔹 SET FEATURES (KEY PART)
+  // ==========================
+
+  void setFeature(String key, double value) {
+    if (!featureIndex.containsKey(key)) return;
+
+    int index = featureIndex[key]!;
+    features[index] = value;
+
+    log("📥 Feature Set → $key ($index) = $value");
+  }
+
+  // ==========================
+  // 🔹 AUTO DATA (FROM DEVICE)
+  // ==========================
+
+  void setUsageData({
+    required double total,
+    required double social,
+    required double gaming,
+  }) {
+    setFeature("daily_screen_time", total);
+    setFeature("social_media_hours", social);
+    setFeature("gaming_hours", gaming);
+  }
+
+  final usageService = UsageFeatureService(CategoryService());
+
+  Future<void> loadUsage() async {
+    final data = await usageService.getUsageFeatures();
+
+    setUsageData(
+      total: data["daily_screen_time_hours"] ?? 0.0,
+      social: data["social_media_hours"] ?? 0.0,
+      gaming: data["gaming_hours"] ?? 0.0,
+    );
+  }
+
+  // ==========================
+  // 🔹 RUN INFERENCE
+  // ==========================
+
+  Future<void> runInference() async {
+    if (!isModelLoaded.value) {
+      log("⚠️ Model not loaded");
+      return;
+    }
 
     isProcessing.value = true;
+
     try {
-      final inputData = Float32List.fromList(userData);
-      log("Input Data: $inputData");
+      // await loadUsage();
+      final inputData = Float32List.fromList(features);
+
+      log("📊 Input: $features");
+
       final shape = [1, 12];
 
-      final inputOrt = OrtValueTensor.createTensorWithDataList(
+      final inputTensor = OrtValueTensor.createTensorWithDataList(
         inputData,
         shape,
       );
-      final inputs = {'float_input': inputOrt};
+
+      final inputs = {'float_input': inputTensor};
       final runOptions = OrtRunOptions();
 
       final outputs = await _session?.runAsync(runOptions, inputs);
 
-      if (outputs != null && outputs.length >= 2) {
-        final probOutput = outputs[1]; // Index 1 is the probability tensor
+      if (outputs != null && outputs.length > 1) {
+        final probTensor = outputs[1];
 
-        if (probOutput is OrtValueTensor) {
-          // With ZipMap disabled, output is a nested list: [ [prob_class_0, prob_class_1] ]
-          final List<dynamic> outerList = probOutput.value as List<dynamic>;
-          final List<dynamic> firstRow = outerList[0] as List<dynamic>;
+        if (probTensor is OrtValueTensor) {
+          final List outer = probTensor.value as List;
+          final List row = outer[0];
 
-          // index 1 is usually the 'Addicted' probability (Class 1)
-          riskScore.value = (firstRow[1] as num).toDouble();
-          log("Final Prediction: ${riskScore.value}");
+          riskScore.value = (row[1] as num).toDouble();
+
+          log("🎯 Prediction: ${riskScore.value}");
         }
       }
 
       // Cleanup
-      inputOrt.release();
+      inputTensor.release();
       runOptions.release();
       outputs?.forEach((e) => e?.release());
+
+      _generateNudge();
+    } catch (e) {
+      log("❌ Inference error: $e");
     } finally {
       isProcessing.value = false;
     }
   }
 
-  void generateNudge(List<double> userData, double score) {
-    if (score < 0.3) {
-      recommendation.value =
-          "Habits look healthy! Your risk of addiction is very low.";
-    } else if (score >= 0.3 && score < 0.7) {
-      recommendation.value =
-          "Moderate risk detected. Consider setting a 30-minute timer for your next social media session.";
-    } else {
-      // HIGH RISK LOGIC (SHAP-Informed)
-      // Based on your feature_map.json indices:
-      double socialMediaHrs = userData[2];
-      double sleepHrs = userData[1];
+  // ==========================
+  // 🔹 SMART RECOMMENDATION
+  // ==========================
 
-      if (socialMediaHrs > 3.5) {
+  void _generateNudge() {
+    double score = riskScore.value;
+
+    double social = features[featureIndex["social_media_hours"]!];
+    double sleep = features[featureIndex["sleep_hours"]!];
+
+    if (score > 0.7) {
+      if (social > 3.5) {
+        recommendation.value = "🚨 High Risk: Social media overuse detected.";
+      } else if (sleep < 6) {
         recommendation.value =
-            "⚠️ High Risk! Our AI identifies your $socialMediaHrs hrs of social media as the main driver. Try 'Focus Mode'.";
-      } else if (sleepHrs < 6.0) {
-        recommendation.value =
-            "⚠️ High Risk! Your lack of sleep is making your phone use more impulsive. Try an early night.";
+            "🚨 High Risk: Poor sleep is affecting behavior.";
       } else {
-        recommendation.value =
-            "⚠️ High Risk! We recommend reducing overall screen time by 20% today.";
+        recommendation.value = "🚨 High Risk: Reduce overall screen time.";
       }
+    } else if (score > 0.3) {
+      recommendation.value = "⚠️ Moderate Risk: Try reducing usage gradually.";
+    } else {
+      recommendation.value = "✅ Low Risk: Keep maintaining balance.";
     }
   }
+
+  // ==========================
+  // 🔹 CLEANUP
+  // ==========================
 
   @override
   void onClose() {

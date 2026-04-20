@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:wellbeing/view/onboarding_screen.dart';
 import 'package:wellbeing/view/wellbeing_view.dart';
+
+import 'view/permission_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +19,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Wellbeing App',
-      home: WellbeingView(), // stays splash first
+      home: OnboardingScreen(), // stays splash first
     );
   }
 }
