@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:usage_stats/usage_stats.dart';
 
 class PermissionService {
@@ -17,7 +18,9 @@ class PermissionService {
     bool granted = await hasUsagePermission();
 
     if (!granted) {
-      log("🔐 Permission not granted → opening settings");
+      if (kDebugMode) {
+        log("🔐 Permission not granted → opening settings");
+      }
 
       await requestUsagePermission();
 
@@ -26,8 +29,10 @@ class PermissionService {
 
       granted = await hasUsagePermission();
     }
+    if (kDebugMode) {
+      log("🔐 Final Permission: $granted");
+    }
 
-    log("🔐 Final Permission: $granted");
     return granted;
   }
 }

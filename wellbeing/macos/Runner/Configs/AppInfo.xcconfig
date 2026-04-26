@@ -8,7 +8,7 @@
 PRODUCT_NAME = wellbeing
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.wellbeing
+PRODUCT_BUNDLE_IDENTIFIER = com.saqlain.wellbeing
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 com.saqlain. All rights reserved.

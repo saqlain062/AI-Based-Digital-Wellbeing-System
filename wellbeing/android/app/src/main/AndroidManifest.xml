@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"/>
     <application
-        android:label="wellbeing"
+        android:label="Wellbeing AI"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

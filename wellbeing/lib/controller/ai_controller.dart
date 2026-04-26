@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:onnxruntime_v2/onnxruntime_v2.dart';
@@ -64,9 +65,13 @@ class AIController extends GetxController {
       _session = OrtSession.fromBuffer(bytes, sessionOptions);
 
       isModelLoaded.value = true;
-      log("✅ Model Loaded");
+      if (kDebugMode) {
+        log("✅ Model Loaded");
+      }
     } catch (e) {
-      log("❌ Model load error: $e");
+      if (kDebugMode) {
+        log("❌ Model load error: $e");
+      }
     }
   }
 
@@ -79,8 +84,9 @@ class AIController extends GetxController {
 
     int index = featureIndex[key]!;
     features[index] = value;
-
-    log("📥 Feature Set → $key ($index) = $value");
+    if (kDebugMode) {
+      log("📥 Feature Set → $key ($index) = $value");
+    }
   }
 
   // ==========================
@@ -115,7 +121,10 @@ class AIController extends GetxController {
 
   Future<void> runInference() async {
     if (!isModelLoaded.value) {
-      log("⚠️ Model not loaded");
+      if (kDebugMode) {
+        log("⚠️ Model not loaded");
+      }
+
       return;
     }
 
@@ -124,8 +133,9 @@ class AIController extends GetxController {
     try {
       // await loadUsage();
       final inputData = Float32List.fromList(features);
-
-      log("📊 Input: $features");
+      if (kDebugMode) {
+        log("📊 Input: $features");
+      }
 
       final shape = [1, 12];
 
@@ -147,8 +157,9 @@ class AIController extends GetxController {
           final List row = outer[0];
 
           riskScore.value = (row[1] as num).toDouble();
-
-          log("🎯 Prediction: ${riskScore.value}");
+          if (kDebugMode) {
+            log("🎯 Prediction: ${riskScore.value}");
+          }
         }
       }
 
@@ -159,7 +170,9 @@ class AIController extends GetxController {
 
       _generateNudge();
     } catch (e) {
-      log("❌ Inference error: $e");
+      if (kDebugMode) {
+        log("❌ Inference error: $e");
+      }
     } finally {
       isProcessing.value = false;
     }

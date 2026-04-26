@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:onnxruntime_v2/onnxruntime_v2.dart';
 
@@ -16,7 +17,9 @@ class AIService {
     final rawAssetFile = await rootBundle.load('assets/wellbeing_model.onnx');
     final bytes = rawAssetFile.buffer.asUint8List();
     _session = OrtSession.fromBuffer(bytes, sessionOptions);
-    print("✅ AI Model Loaded Successfully");
+    if (kDebugMode) {
+      print("✅ AI Model Loaded Successfully");
+    }
   }
 
   // 2. Run Prediction

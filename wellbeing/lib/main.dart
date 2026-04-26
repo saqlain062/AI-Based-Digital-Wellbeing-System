@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:wellbeing/view/onboarding_screen.dart';
-import 'package:wellbeing/view/wellbeing_view.dart';
 
-import 'view/permission_screen.dart';
+import 'services/hive_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+  await Hive.openBox('user');
+  await Hive.openBox('categories');
+  await Hive.openBox('features');
 
   runApp(const MyApp());
 }

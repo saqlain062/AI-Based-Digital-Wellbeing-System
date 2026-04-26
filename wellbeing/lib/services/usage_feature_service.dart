@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_device_apps/flutter_device_apps.dart';
 import 'package:usage_stats/usage_stats.dart';
 
@@ -22,7 +23,9 @@ class UsageFeatureService {
         onlyLaunchable: true,
       );
 
-      log("📦 Apps: ${apps.length}");
+      if (kDebugMode) {
+        log("📦 Apps: ${apps.length}");
+      }
 
       // 2️⃣ Usage permission
       bool granted = await UsageStats.checkUsagePermission() ?? false;
@@ -36,12 +39,16 @@ class UsageFeatureService {
       final end = DateTime.now();
       final start = end.subtract(const Duration(days: 3));
 
-      log("📦 Start: $start");
-      log("📦 End: $end");
+      if (kDebugMode) {
+        log("📦 Start: $start");
+        log("📦 End: $end");
+      }
 
       final stats = await UsageStats.queryUsageStats(start, end);
 
-      log("📦 Stats: ${stats.length}");
+      if (kDebugMode) {
+        log("📦 Stats: ${stats.length}");
+      }
 
       // 4️⃣ Build usage map
       final Map<String, int> usageMap = {};
@@ -77,7 +84,10 @@ class UsageFeatureService {
 
         // 🔍 Limited debug logs
         if (debugCount < 10) {
-          log("🔥 $package → $usageTime");
+          if (kDebugMode) {
+            log("🔥 $package → $usageTime");
+          }
+
           debugCount++;
         }
       }
@@ -113,12 +123,16 @@ class UsageFeatureService {
         "social_media_hours": _toHours(socialTime),
         "gaming_hours": _toHours(gamingTime),
       };
-
-      log("✅ RESULT: $result");
+      if (kDebugMode) {
+        log("✅ RESULT: $result");
+      }
 
       return result;
     } catch (e) {
-      log("❌ Error: $e");
+      if (kDebugMode) {
+        log("❌ Error: $e");
+      }
+
       return _emptyResult();
     }
   }

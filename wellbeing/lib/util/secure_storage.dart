@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageService {
@@ -20,22 +21,34 @@ class SecureStorageService {
   // ==========================
 
   Future<void> write(String key, String value) async {
-    log("🔐 Write → $key");
+    if (kDebugMode) {
+      log("🔐 Write → $key");
+    }
+
     await _storage.write(key: key, value: value);
   }
 
   Future<String?> read(String key) async {
-    log("🔐 Read → $key");
+    if (kDebugMode) {
+      log("🔐 Read → $key");
+    }
+
     return await _storage.read(key: key);
   }
 
   Future<void> delete(String key) async {
-    log("🗑 Delete → $key");
+    if (kDebugMode) {
+      log("🗑 Delete → $key");
+    }
+
     await _storage.delete(key: key);
   }
 
   Future<void> deleteAll() async {
-    log("🗑 Delete ALL");
+    if (kDebugMode) {
+      log("🗑 Delete ALL");
+    }
+
     await _storage.deleteAll();
   }
 
@@ -63,7 +76,10 @@ class SecureStorageService {
     try {
       return jsonDecode(data);
     } catch (e) {
-      log("❌ JSON Decode Error: $e");
+      if (kDebugMode) {
+        log("❌ JSON Decode Error: $e");
+      }
+
       return null;
     }
   }
@@ -83,7 +99,10 @@ class SecureStorageService {
     try {
       return jsonDecode(data);
     } catch (e) {
-      log("❌ List Decode Error: $e");
+      if (kDebugMode) {
+        log("❌ List Decode Error: $e");
+      }
+
       return null;
     }
   }

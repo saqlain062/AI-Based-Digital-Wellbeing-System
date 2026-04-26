@@ -1,39 +1,29 @@
 import 'dart:convert';
 import 'dart:developer';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import '../util/secure_storage.dart';
+import 'hive_service.dart';
 
 class CategoryService {
   Map<String, String> globalMap = {};
-  Map<String, String> userMap = {};
-
-  static const String _userKey = "user_categories";
 
   /// ==========================
   /// INIT
   /// ==========================
   Future<void> init() async {
     try {
-      // 🔹 Load global JSON
       final data = await rootBundle.loadString('assets/app_categories.json');
 
       globalMap = Map<String, String>.from(json.decode(data));
 
-      log("📦 Global categories loaded: ${globalMap.length}");
-
-      // 🔹 Load user data
-      final userData = await SecureStorageService.instance.readJson(_userKey);
-
-      if (userData != null) {
-        userMap = Map<String, String>.from(userData);
-        log("👤 User categories loaded: ${userMap.length}");
-      } else {
-        log("⚠️ No user categories found");
+      if (kDebugMode) {
+        log("📦 Global categories loaded: ${globalMap.length}");
       }
     } catch (e) {
-      log("❌ CategoryService init error: $e");
+      if (kDebugMode) {
+        log("❌ Category init error: $e");
+      }
     }
   }
 
@@ -41,9 +31,12 @@ class CategoryService {
   /// GET CATEGORY
   /// ==========================
   String getCategory(String packageName) {
-    // 1️⃣ User override
-    if (userMap.containsKey(packageName)) {
-      return userMap[packageName]!;
+    final hive = HiveService.instance;
+
+    // 1️⃣ User override (Hive)
+    final userCategory = hive.getCategory(packageName);
+    if (userCategory != null) {
+      return userCategory;
     }
 
     // 2️⃣ Exact match
@@ -51,29 +44,34 @@ class CategoryService {
       return globalMap[packageName]!;
     }
 
-    // 3️⃣ 🔥 Partial match (IMPORTANT)
+    // 3️⃣ Partial match (fallback)
     for (var key in globalMap.keys) {
       if (packageName.contains(key)) {
-        log("🔍 Partial match: $packageName → $key");
+        if (kDebugMode) {
+          log("🔍 Partial match: $packageName → $key");
+        }
+
         return globalMap[key]!;
       }
     }
 
-    return 'Unknown';
+    return "Unknown";
   }
 
   /// ==========================
-  /// SAVE USER CATEGORY
+  /// SAVE USER CATEGORY (Hive)
   /// ==========================
   Future<void> saveUserCategory(String package, String category) async {
     try {
-      userMap[package] = category;
+      HiveService.instance.saveCategory(package, category);
 
-      await SecureStorageService.instance.writeJson(_userKey, userMap);
-
-      log("✅ SAVED: $package → $category");
+      if (kDebugMode) {
+        log("✅ SAVED (Hive): $package → $category");
+      }
     } catch (e) {
-      log("❌ Save error: $package → $e");
+      if (kDebugMode) {
+        log("❌ Save error: $e");
+      }
     }
   }
 
@@ -82,35 +80,22 @@ class CategoryService {
   /// ==========================
   Future<void> removeUserCategory(String package) async {
     try {
-      userMap.remove(package);
+      HiveService.instance.categoryBox.delete(package);
 
-      await SecureStorageService.instance.writeJson(_userKey, userMap);
-
-      log("🗑 REMOVED: $package");
+      if (kDebugMode) {
+        log("🗑 REMOVED: $package");
+      }
     } catch (e) {
-      log("❌ Remove error: $package → $e");
+      if (kDebugMode) {
+        log("❌ Remove error: $e");
+      }
     }
   }
 
   /// ==========================
   /// GET ALL USER CATEGORIES
   /// ==========================
-  Map<String, String> getAllUserCategories() {
-    return userMap;
-  }
-
-  /// ==========================
-  /// DEBUG PRINT
-  /// ==========================
-  void printAllCategories() {
-    log("📊 ===== USER CATEGORIES =====");
-    userMap.forEach((key, value) {
-      log("$key → $value");
-    });
-
-    log("📊 ===== GLOBAL SAMPLE =====");
-    globalMap.entries.take(10).forEach((e) {
-      log("${e.key} → ${e.value}");
-    });
+  Map<dynamic, dynamic> getAllUserCategories() {
+    return HiveService.instance.getAllCategories();
   }
 }
