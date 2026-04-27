@@ -3,11 +3,12 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:wellbeing/navigation_menu.dart';
+import 'package:wellbeing/services/hive_service.dart';
 import 'package:wellbeing/services/permission_lifecycle_service.dart';
 
 import '../controller/ai_controller.dart';
 import '../controller/onboarding_controller.dart';
-import '../navigation_menu.dart';
 import '../services/permission_service.dart';
 
 class PermissionScreen extends StatefulWidget {
@@ -27,14 +28,17 @@ class _PermissionScreenState extends State<PermissionScreen> {
 
     final permission = Get.put(PermissionService());
     final ai = Get.put(AIController());
+    final c = Get.put(OnboardingController());
 
     lifecycle = PermissionLifecycleService(
       permissionService: permission,
       onGranted: () async {
+        c.saveProfile();
         await ai.loadUsage();
         await ai.runInference();
+        HiveService.instance.saveBool('onboardingCompleted', true);
 
-        Get.offAll(() => NavigationMenu()); // move forward
+        Get.offAll(() => const NavigationMenu()); // move forward
       },
     );
 
@@ -48,7 +52,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
   }
 
   Widget build(BuildContext context) {
-    final c = Get.find<OnboardingController>();
+    final c = Get.put(OnboardingController());
     final ai = Get.put(AIController());
     final permission = Get.put(PermissionService());
 
@@ -83,6 +87,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
               ElevatedButton(
                 onPressed: () async {
                   _setCommonFeatures(c, ai);
+                  c.saveProfile();
 
                   final isGranted = await permission.hasUsagePermission();
 
@@ -90,8 +95,9 @@ class _PermissionScreenState extends State<PermissionScreen> {
                     // ✅ Already granted → skip settings
                     await ai.loadUsage();
                     await ai.runInference();
+                    HiveService.instance.saveBool('onboardingCompleted', true);
 
-                    Get.offAll(() => NavigationMenu());
+                    Get.offAll(() => const NavigationMenu());
                   } else {
                     // ❗ Not granted → send to settings
                     await permission.requestUsagePermission();
@@ -227,6 +233,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
                   onPressed: () async {
                     // 1️⃣ Set all base features
                     _setCommonFeatures(c, ai);
+                    c.saveProfile();
 
                     // 2️⃣ Set manual usage features
                     ai.setFeature(
@@ -242,8 +249,9 @@ class _PermissionScreenState extends State<PermissionScreen> {
 
                     // 3️⃣ Run AI
                     await ai.runInference();
+                    HiveService.instance.saveBool('onboardingCompleted', true);
 
-                    Get.to(() => NavigationMenu());
+                    Get.offAll(() => const NavigationMenu());
                   },
                   child: const Text("Continue"),
                 ),

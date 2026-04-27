@@ -5,7 +5,8 @@ import 'package:get/get.dart';
 import 'package:wellbeing/util/constants/image_strings.dart';
 import 'package:wellbeing/view/category_screen.dart';
 import 'package:wellbeing/view/contact_screen.dart';
-import 'package:wellbeing/view/setting/setting_screen.dart';
+import 'package:wellbeing/view/dashboard/ai_analysis_screen.dart';
+import 'package:wellbeing/view/setting/setting_upgrade_screen.dart';
 import 'package:wellbeing/view/wellbeing_view.dart';
 import 'package:wellbeing/widget/dialogbox.dart';
 
@@ -20,9 +21,9 @@ class _LawyerNavigationMenuState extends State<NavigationMenu> {
   int currentIndex = 0;
   final List<Widget> screens = [
     ResultScreen(),
-    CategoryScreen(),
+    AIAnalysisScreen(),
     const ContactScreen(),
-    const SettingScreen(),
+    const UpgradedSettingScreen(),
   ];
 
   onPopInvoked(bool isdark) {

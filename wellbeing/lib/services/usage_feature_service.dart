@@ -137,6 +137,76 @@ class UsageFeatureService {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getTopApps({int limit = 5}) async {
+    try {
+      final apps = await FlutterDeviceApps.listApps(
+        includeSystem: false,
+        onlyLaunchable: true,
+      );
+
+      bool granted = await UsageStats.checkUsagePermission() ?? false;
+      if (!granted) {
+        await UsageStats.grantUsagePermission();
+        return [];
+      }
+
+      final end = DateTime.now();
+      final start = end.subtract(const Duration(days: 1));
+      final stats = await UsageStats.queryUsageStats(start, end);
+
+      final Map<String, int> usageMap = {};
+      for (var stat in stats) {
+        final package = stat.packageName;
+        final rawTime = stat.totalTimeInForeground;
+        if (package == null || rawTime == null) continue;
+
+        int usageTime = 0;
+        if (rawTime is int) {
+          usageTime = rawTime as int;
+        } else if (rawTime is String) {
+          usageTime = int.tryParse(rawTime) ?? 0;
+        }
+
+        if (usageTime <= 0) continue;
+        if (package.startsWith('com.android') ||
+            package.startsWith('com.google.android') ||
+            package.contains('mediatek')) {
+          continue;
+        }
+
+        usageMap[package] = usageTime;
+      }
+
+      final List<Map<String, dynamic>> appList = [];
+
+      for (var app in apps) {
+        final package = app.packageName;
+        if (package == null || !usageMap.containsKey(package)) continue;
+
+        final hours = _toHours(usageMap[package]!);
+        final category = categoryService.getCategory(package);
+
+        appList.add({
+          'appName': app.appName,
+          'packageName': package,
+          'usageHours': hours,
+          'category': category,
+        });
+      }
+
+      appList.sort(
+        (a, b) =>
+            (b['usageHours'] as double).compareTo(a['usageHours'] as double),
+      );
+      return appList.take(limit).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        log('❌ getTopApps error: $e');
+      }
+      return [];
+    }
+  }
+
   Map<String, double> _emptyResult() {
     return {
       "daily_screen_time_hours": 0.0,

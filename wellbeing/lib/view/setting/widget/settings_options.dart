@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:wellbeing/view/perimission/permission_screen.dart';
 import 'package:wellbeing/view/permission_screen.dart';
+import 'package:wellbeing/view/setting/profile_screen.dart';
 
 import '../../../../../util/constants/image_strings.dart';
 import '../../../../../util/constants/text_strings.dart';
@@ -19,6 +20,11 @@ class SGeneralSetting extends StatelessWidget {
     final isdark = SHelperFunctions.isDarkMode(context);
     return Column(
       children: [
+        SettingTile(
+          title: "Profile",
+          trailingIcon: SImages.arrow,
+          onTap: () => Get.to(() => const ProfileScreen()),
+        ),
         SettingTile(
           title: "Permission",
           leadingIcon: SImages.settingPrivacy,

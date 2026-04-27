@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
@@ -6,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:onnxruntime_v2/onnxruntime_v2.dart';
 
 import '../services/category_service.dart';
+import '../services/hive_service.dart';
 import '../services/usage_feature_service.dart';
 
 class AIController extends GetxController {
@@ -18,6 +20,7 @@ class AIController extends GetxController {
   var recommendation = "Waiting for data...".obs;
 
   OrtSession? _session;
+  final Completer<void> _modelReady = Completer<void>();
 
   // ==========================
   // 🔹 FEATURE STORAGE
@@ -48,8 +51,33 @@ class AIController extends GetxController {
   @override
   void onReady() {
     super.onReady();
+    _initModel();
+    _loadSavedProfile();
+  }
 
-    _initModel(); // ✅ safe here
+  Future<void> _loadSavedProfile() async {
+    try {
+      final profile = HiveService.instance.getUserProfile();
+      final onboardingInputs = HiveService.instance.getOnboardingInputs();
+
+      setFeature("age", profile['age'] ?? 20.0);
+      setFeature("gender", profile['gender'] ?? 1.0);
+      setFeature("sleep_hours", onboardingInputs['sleep_hours'] ?? 7.0);
+      setFeature(
+        "work_study_hours",
+        onboardingInputs['work_study_hours'] ?? 4.0,
+      );
+      setFeature("stress_level", onboardingInputs['stress_level'] ?? 5.0);
+      setFeature("academic_impact", onboardingInputs['academic_impact'] ?? 5.0);
+
+      if (kDebugMode) {
+        log("✅ Loaded saved profile into AI features");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        log("⚠️ Could not load saved profile: $e");
+      }
+    }
   }
 
   Future<void> _initModel() async {
