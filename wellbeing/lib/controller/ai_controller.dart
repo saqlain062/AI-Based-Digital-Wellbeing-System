@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:onnxruntime_v2/onnxruntime_v2.dart';
 
@@ -18,6 +19,8 @@ class AIController extends GetxController {
   var isModelLoaded = false.obs;
   var isProcessing = false.obs;
   var recommendation = "Waiting for data...".obs;
+  var cameFromManualEstimation = false.obs;
+  var cameFromSmartTracking = false.obs;
 
   OrtSession? _session;
   final Completer<void> _modelReady = Completer<void>();
@@ -121,14 +124,35 @@ class AIController extends GetxController {
   // 🔹 AUTO DATA (FROM DEVICE)
   // ==========================
 
+  void setCameFromManualEstimation() {
+    cameFromManualEstimation.value = true;
+  }
+
+  void setCameFromSmartTracking() {
+    cameFromSmartTracking.value = true;
+  }
+
   void setUsageData({
     required double total,
     required double social,
     required double gaming,
+    double? notifications,
+    double? appOpens,
+    double? weekendScreen,
   }) {
     setFeature("daily_screen_time", total);
     setFeature("social_media_hours", social);
     setFeature("gaming_hours", gaming);
+
+    if (notifications != null) {
+      setFeature("notifications", notifications);
+    }
+    if (appOpens != null) {
+      setFeature("app_opens", appOpens);
+    }
+    if (weekendScreen != null) {
+      setFeature("weekend_screen", weekendScreen);
+    }
   }
 
   final usageService = UsageFeatureService(CategoryService());
@@ -140,6 +164,9 @@ class AIController extends GetxController {
       total: data["daily_screen_time_hours"] ?? 0.0,
       social: data["social_media_hours"] ?? 0.0,
       gaming: data["gaming_hours"] ?? 0.0,
+      notifications: data["notifications_per_day"],
+      appOpens: data["app_opens_per_day"],
+      weekendScreen: data["weekend_screen_hours"],
     );
   }
 
@@ -152,11 +179,13 @@ class AIController extends GetxController {
       if (kDebugMode) {
         log("⚠️ Model not loaded");
       }
-
       return;
     }
 
-    isProcessing.value = true;
+    await EasyLoading.show(
+      status: 'Analyzing your data...',
+      maskType: EasyLoadingMaskType.black,
+    );
 
     try {
       // await loadUsage();
@@ -201,8 +230,9 @@ class AIController extends GetxController {
       if (kDebugMode) {
         log("❌ Inference error: $e");
       }
+      EasyLoading.showError('Analysis failed. Please try again.');
     } finally {
-      isProcessing.value = false;
+      EasyLoading.dismiss();
     }
   }
 

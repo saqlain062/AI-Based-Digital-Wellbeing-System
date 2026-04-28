@@ -14,11 +14,19 @@ class OnboardingController extends GetxController {
   var bedTime = const TimeOfDay(hour: 22, minute: 30).obs;
   var wakeTime = const TimeOfDay(hour: 7, minute: 0).obs;
   var sleepHours = 7.0.obs;
+  var useSleepWindow = true.obs;
+  var showSleepIndicator = true.obs;
   var workHours = 4.0.obs;
 
   var selectedMood = 2.obs;
   final moodEmojis = ['😌', '🙂', '😐', '😟', '😰'];
-  final moodLabels = ['Very calm', 'Relaxed', 'Neutral', 'Stressed', 'Very stressed'];
+  final moodLabels = [
+    'Very calm',
+    'Relaxed',
+    'Neutral',
+    'Stressed',
+    'Very stressed',
+  ];
   final moodValues = [1.0, 2.5, 5.0, 7.5, 10.0];
 
   var stressLevel = 5.0.obs;
@@ -39,13 +47,32 @@ class OnboardingController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    useSleepWindow.value = true;
+    showSleepIndicator.value = true;
     sleepHours.value = calculatedSleepHours;
     stressLevel.value = moodValues[selectedMood.value];
   }
 
+  void toggleSleepWindow(bool enabled) {
+    useSleepWindow.value = enabled;
+    if (enabled) {
+      sleepHours.value = calculatedSleepHours;
+    }
+  }
+
+  void toggleSleepIndicator(bool enabled) {
+    showSleepIndicator.value = enabled;
+  }
+
   double get calculatedSleepHours {
     final bed = DateTime(2024, 1, 1, bedTime.value.hour, bedTime.value.minute);
-    final wake = DateTime(2024, 1, 2, wakeTime.value.hour, wakeTime.value.minute);
+    final wake = DateTime(
+      2024,
+      1,
+      2,
+      wakeTime.value.hour,
+      wakeTime.value.minute,
+    );
     final diff = wake.difference(bed);
     return diff.inMinutes / 60.0;
   }
@@ -72,7 +99,7 @@ class OnboardingController extends GetxController {
     );
 
     HiveService.instance.saveOnboardingInputs(
-      sleepHours: calculatedSleepHours,
+      sleepHours: sleepHours.value,
       workStudyHours: workHours.value,
       stressLevel: stressLevel.value,
       academicImpact: academicImpact.value,

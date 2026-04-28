@@ -38,7 +38,10 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Wellbeing App',
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.green),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: const Color.fromARGB(255, 255, 255, 255),
+      ),
       builder: EasyLoading.init(),
       home: initialScreen,
     );

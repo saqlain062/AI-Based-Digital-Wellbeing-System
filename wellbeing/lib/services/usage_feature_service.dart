@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_device_apps/flutter_device_apps.dart';
 import 'package:usage_stats/usage_stats.dart';
+import 'package:wellbeing/services/notification_service.dart';
 
 import 'category_service.dart';
 
@@ -117,11 +118,46 @@ class UsageFeatureService {
         }
       }
 
-      // 6️⃣ Result
+      // 6️⃣ Calculate weekend usage (simplified - last 2 days)
+      int weekendTime = 0;
+      final weekendStart = end.subtract(const Duration(days: 2));
+      final weekendStats = await UsageStats.queryUsageStats(weekendStart, end);
+
+      for (var stat in weekendStats) {
+        final package = stat.packageName;
+        final rawTime = stat.totalTimeInForeground;
+
+        if (package == null || rawTime == null) continue;
+
+        int usageTime = 0;
+        if (rawTime is int) {
+          usageTime = rawTime as int;
+        } else if (rawTime is String) {
+          usageTime = int.tryParse(rawTime) ?? 0;
+        }
+
+        if (usageTime <= 0) continue;
+        if (package.startsWith('com.android') ||
+            package.startsWith('com.google.android') ||
+            package.contains('mediatek')) {
+          continue;
+        }
+
+        weekendTime += usageTime;
+      }
+
+      // 7️⃣ Get notifications and app opens from native code
+      final notifications = await NotificationService.getDailyNotificationCount();
+      final appOpens = await NotificationService.getDailyAppOpens();
+
+      // 8️⃣ Result
       final result = {
         "daily_screen_time_hours": _toHours(totalTime),
         "social_media_hours": _toHours(socialTime),
         "gaming_hours": _toHours(gamingTime),
+        "weekend_screen_hours": _toHours(weekendTime),
+        "notifications_per_day": notifications.toDouble(),
+        "app_opens_per_day": appOpens.toDouble(),
       };
       if (kDebugMode) {
         log("✅ RESULT: $result");
