@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../util/constants/color.dart';
 import '../../../util/constants/sizes.dart';
 import '../../../util/device/device_utility.dart';
 import '../../../util/helper/helper_functions.dart';
+import '../../../util/theme/wellbeing_theme.dart';
 
 class SAppBar extends StatelessWidget implements PreferredSizeWidget {
   const SAppBar({
@@ -31,7 +31,7 @@ class SAppBar extends StatelessWidget implements PreferredSizeWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: SSizes.medium),
       child: AppBar(
-        surfaceTintColor: dark ? Colors.black : Colors.white,
+        surfaceTintColor: Colors.transparent,
         backgroundColor: backgroundColor,
         leadingWidth: 30,
         centerTitle: centerTitle,
@@ -41,7 +41,9 @@ class SAppBar extends StatelessWidget implements PreferredSizeWidget {
                 onPressed: () => Get.back(),
                 icon: Icon(
                   Icons.arrow_back_ios_new_rounded,
-                  color: dark ? SColors.white : SColors.dark,
+                  color: dark
+                      ? WellbeingTheme.darkTextPrimary
+                      : WellbeingTheme.lightTextPrimary,
                 ),
               )
             : leadingIcon != null

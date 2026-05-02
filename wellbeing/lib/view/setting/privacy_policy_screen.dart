@@ -1,86 +1,208 @@
 import 'package:flutter/material.dart';
 
+import '../dashboard/ai_module_widgets.dart';
+
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Privacy Policy')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
+    return AiModuleScaffold(
+      title: 'Privacy Policy',
+      subtitle:
+          'A simple explanation of how Wellbeing AI handles your data, permissions, and local storage.',
+      showBack: true,
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: const [
-            Text(
-              'Privacy First',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            AiFadeSlideIn(child: _PrivacyHeroCard()),
+            SizedBox(height: 18),
+            AiFadeSlideIn(
+              delayMs: 100,
+              child: _PolicySectionCard(
+                title: 'What Stays On Your Device',
+                icon: Icons.phone_android_rounded,
+                lines: [
+                  'Your screen time and app usage data',
+                  'Your manual assessments and wellbeing inputs',
+                  'Your saved results, reports, and app preferences',
+                ],
+              ),
             ),
-            SizedBox(height: 8),
-            Text(
-              'Your data stays on your device. We never sell or share your personal information.',
-              style: TextStyle(color: Colors.grey),
+            SizedBox(height: 18),
+            AiFadeSlideIn(
+              delayMs: 180,
+              child: _PolicySectionCard(
+                title: 'How The App Uses It',
+                icon: Icons.psychology_alt_rounded,
+                lines: [
+                  'To generate your AI-based wellbeing insights',
+                  'To show app activity, reports, and usage patterns',
+                  'To keep your experience personalized across visits',
+                ],
+              ),
             ),
-            SizedBox(height: 24),
-            Text(
-              'Last updated: April 27, 2026',
-              style: TextStyle(fontWeight: FontWeight.w600),
+            SizedBox(height: 18),
+            AiFadeSlideIn(
+              delayMs: 260,
+              child: _PolicySectionCard(
+                title: 'What We Do Not Do',
+                icon: Icons.shield_outlined,
+                lines: [
+                  'We do not require an account',
+                  'We do not sell your personal data',
+                  'We do not upload your private usage history to a cloud service as part of the core experience',
+                ],
+              ),
             ),
-            SizedBox(height: 20),
-            Text(
-              '1. Information We Collect',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Mindful collects the following data locally on your device:\n\n• Screen time and app usage statistics\n• Your wellbeing assessments and mood check-ins\n• Goals, habits, and progress data\n• Optional journal entries and reflections',
-            ),
-            SizedBox(height: 20),
-            Text(
-              '2. How We Use Your Data',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Your data is processed locally to:\n\n• Generate personalized AI insights and recommendations\n• Track your progress toward wellbeing goals\n• Provide analytics and reports',
-            ),
-            SizedBox(height: 20),
-            Text(
-              '3. Data Storage & Security',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'All data is encrypted and stored only on your device. We do not transmit your personal usage data to external servers.',
-            ),
-            SizedBox(height: 20),
-            Text(
-              '4. Third-Party Services',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'We do not share your data with third parties for advertising or marketing purposes.',
-            ),
-            SizedBox(height: 20),
-            Text(
-              '5. Your Rights',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'You have the right to:\n\n• Export all your data at any time\n• Delete your account and all associated data\n• Opt out of optional analytics',
-            ),
-            SizedBox(height: 20),
-            Text(
-              '6. Contact Us',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Questions about privacy? Contact us at privacy@mindfulapp.com',
+            SizedBox(height: 18),
+            AiFadeSlideIn(
+              delayMs: 340,
+              child: _PolicyFooterCard(
+                title: 'Your Choices',
+                text:
+                    'Smart Tracking is optional. You can use manual input instead, review your settings later, and decide how much information the app can access on this device.',
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PrivacyHeroCard extends StatelessWidget {
+  const _PrivacyHeroCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return AiGlassCard(
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          AiModulePalette.blue,
+          AiModulePalette.purple,
+          AiModulePalette.teal,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          AiSectionTitle(
+            icon: Icons.lock_outline_rounded,
+            title: 'Privacy first by design',
+            color: Colors.white,
+          ),
+          SizedBox(height: 14),
+          Text(
+            'Wellbeing AI is designed to keep your information close to you. The app uses local data on your device to create insights without asking you to create an account.',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              height: 1.45,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PolicySectionCard extends StatelessWidget {
+  const _PolicySectionCard({
+    required this.title,
+    required this.icon,
+    required this.lines,
+  });
+
+  final String title;
+  final IconData icon;
+  final List<String> lines;
+
+  @override
+  Widget build(BuildContext context) {
+    return AiGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AiSectionTitle(
+            icon: icon,
+            title: title,
+            color: AiModulePalette.teal,
+          ),
+          const SizedBox(height: 14),
+          ...lines.map(
+            (line) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 3),
+                    child: Icon(
+                      Icons.check_circle_rounded,
+                      color: AiModulePalette.teal,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      line,
+                      style: TextStyle(
+                        color: AiModulePalette.textPrimary(context),
+                        fontSize: 14,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PolicyFooterCard extends StatelessWidget {
+  const _PolicyFooterCard({required this.title, required this.text});
+
+  final String title;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return AiGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: AiModulePalette.textPrimary(context),
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            text,
+            style: TextStyle(
+              color: AiModulePalette.textSecondary(context),
+              fontSize: 14,
+              height: 1.45,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

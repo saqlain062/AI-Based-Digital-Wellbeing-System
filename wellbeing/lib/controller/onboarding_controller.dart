@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../services/hive_service.dart';
-import 'ai_controller.dart';
 
 class OnboardingController extends GetxController {
   var currentStep = 0.obs;
@@ -42,15 +41,30 @@ class OnboardingController extends GetxController {
   var manualSocial = 2.0.obs;
   var manualGaming = 1.0.obs;
 
-  final ai = Get.put(AIController);
-
   @override
   void onInit() {
     super.onInit();
+    _loadSavedProfile();
     useSleepWindow.value = true;
     showSleepIndicator.value = true;
     sleepHours.value = calculatedSleepHours;
     stressLevel.value = moodValues[selectedMood.value];
+  }
+
+  void _loadSavedProfile() {
+    try {
+      final profile = HiveService.instance.getUserProfile();
+      final inputs = HiveService.instance.getOnboardingInputs();
+
+      age.value = profile['age'] ?? 20.0;
+      gender.value = (profile['gender'] ?? 1.0).toInt();
+      sleepHours.value = inputs['sleep_hours'] ?? 7.0;
+      workHours.value = inputs['work_study_hours'] ?? 4.0;
+      stressLevel.value = inputs['stress_level'] ?? 5.0;
+      academicImpact.value = inputs['academic_impact'] ?? 5.0;
+    } catch (e) {
+      // Use defaults if loading fails
+    }
   }
 
   void toggleSleepWindow(bool enabled) {

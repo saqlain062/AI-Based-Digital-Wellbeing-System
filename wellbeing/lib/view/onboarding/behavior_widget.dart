@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:wellbeing/util/theme/wellbeing_theme.dart';
+
 import '../../controller/onboarding_controller.dart';
+import 'basic_info_widget.dart';
 
 class BehaviorWidget extends StatelessWidget {
   const BehaviorWidget({super.key});
@@ -14,178 +17,125 @@ class BehaviorWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Your mindset",
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.green,
-            ),
+          Text(
+            'How you have been feeling',
+            style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 10),
-          const Text(
-            "Help us understand your stress levels and academic challenges",
-            style: TextStyle(fontSize: 16, color: Colors.grey),
+          Text(
+            'These answers add context, so your insights feel more human than a simple score.',
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
-
-          const SizedBox(height: 40),
-
-          // Stress Mood Section
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.sentiment_satisfied,
-                        color: Colors.green.shade700,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        "How stressed do you feel?",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+          const SizedBox(height: 28),
+          OnboardingCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const OnboardingSectionLabel(
+                  icon: Icons.sentiment_satisfied_alt_rounded,
+                  title: 'Stress level',
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Choose the option that feels closest to today.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 16),
+                Obx(
+                  () => Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: List.generate(c.moodLabels.length, (index) {
+                      final selected = c.selectedMood.value == index;
+                      return ChoiceChip(
+                        label: Text(c.moodLabels[index]),
+                        avatar: Text(
+                          c.moodEmojis[index],
+                          style: const TextStyle(fontSize: 16),
                         ),
-                      ),
-                    ],
+                        selected: selected,
+                        onSelected: (_) => c.selectMood(index),
+                        selectedColor: const Color(0xFFEDE9FE),
+                        backgroundColor: WellbeingDecor.tintedSurface(context),
+                        side: BorderSide(color: Theme.of(context).dividerColor),
+                      );
+                    }),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Be honest — this helps us support you better.",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 20),
-                  Obx(
-                    () => Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: List.generate(c.moodLabels.length, (index) {
-                        final selected = c.selectedMood.value == index;
-                        return ChoiceChip(
-                          avatar: Text(
-                            c.moodEmojis[index],
-                            style: const TextStyle(fontSize: 18),
-                          ),
-                          label: Text(c.moodLabels[index]),
-                          selected: selected,
-                          selectedColor: Colors.green.shade100,
-                          backgroundColor: Colors.grey.shade100,
-                          checkmarkColor: Colors.white,
-                          onSelected: (_) => c.selectMood(index),
-                        );
-                      }),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Obx(
-                    () => Text(
-                      "You selected: ${c.moodLabels[c.selectedMood.value]}",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-
-          const SizedBox(height: 30),
-
-          // Academic Impact Section
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.school, color: Colors.green.shade700),
-                      const SizedBox(width: 8),
-                      const Text(
-                        "Academic Impact (1-10)",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
+          const SizedBox(height: 18),
+          OnboardingCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const OnboardingSectionLabel(
+                  icon: Icons.school_rounded,
+                  title: 'Academic impact',
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'How much does phone use affect your studies or ability to focus?',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 14),
+                Obx(
+                  () => RichText(
+                    text: TextSpan(
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: WellbeingDecor.textSecondary(context),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "How much does smartphone use affect your studies?",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Obx(
-                        () => Text(
-                          c.academicImpact.value.toStringAsFixed(0),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                      children: [
+                        TextSpan(
+                          text: c.academicImpact.value.toStringAsFixed(0),
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: WellbeingTheme.purple,
                           ),
                         ),
-                      ),
-                      const Text(" / 10", style: TextStyle(fontSize: 16)),
-                    ],
-                  ),
-                  Obx(
-                    () => Slider(
-                      value: c.academicImpact.value,
-                      min: 1,
-                      max: 10,
-                      divisions: 9,
-                      label: c.academicImpact.value.toStringAsFixed(0),
-                      activeColor: Colors.green,
-                      onChanged: (v) => c.academicImpact.value = v,
+                        const TextSpan(text: ' / 10'),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 8),
+                Obx(
+                  () => Slider(
+                    value: c.academicImpact.value,
+                    min: 1,
+                    max: 10,
+                    divisions: 9,
+                    label: c.academicImpact.value.toStringAsFixed(0),
+                    onChanged: (v) => c.academicImpact.value = v,
+                  ),
+                ),
+              ],
             ),
           ),
-
-          const SizedBox(height: 16),
-
+          const SizedBox(height: 20),
           Row(
             children: [
-              TextButton(
-                onPressed: c.back,
-                style: TextButton.styleFrom(foregroundColor: Colors.green),
-                child: const Text("Back", style: TextStyle(fontSize: 16)),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: c.back,
+                  child: const Text('Back'),
+                ),
               ),
-              const Spacer(),
-              SizedBox(
-                width: 130,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: c.next,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: WellbeingTheme.primaryGradient,
+                    borderRadius: WellbeingTheme.buttonRadius,
+                    boxShadow: WellbeingTheme.softShadow,
                   ),
-                  child: const Text(
-                    "Continue",
-                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  child: ElevatedButton(
+                    onPressed: c.next,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                    ),
+                    child: const Text('Finish Setup'),
                   ),
                 ),
               ),

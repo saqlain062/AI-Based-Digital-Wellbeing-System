@@ -1,14 +1,17 @@
 import 'package:flutter/widgets.dart';
+
 import 'permission_service.dart';
 
 class PermissionLifecycleService with WidgetsBindingObserver {
-  final PermissionService permissionService;
-  final Function onGranted;
-
   PermissionLifecycleService({
     required this.permissionService,
     required this.onGranted,
+    this.onResolved,
   });
+
+  final PermissionService permissionService;
+  final Future<void> Function() onGranted;
+  final Future<void> Function(bool granted)? onResolved;
 
   void start() {
     WidgetsBinding.instance.addObserver(this);
@@ -20,12 +23,18 @@ class PermissionLifecycleService with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
-    if (state == AppLifecycleState.resumed) {
-      bool granted = await permissionService.hasUsagePermission();
+    if (state != AppLifecycleState.resumed) {
+      return;
+    }
 
-      if (granted) {
-        onGranted(); // ✅ move forward
-      }
+    final granted = await permissionService.hasUsagePermission();
+
+    if (onResolved != null) {
+      await onResolved!(granted);
+    }
+
+    if (granted) {
+      await onGranted();
     }
   }
 }

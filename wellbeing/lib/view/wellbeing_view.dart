@@ -1,500 +1,213 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:wellbeing/util/theme/wellbeing_theme.dart';
 
 import '../controller/ai_controller.dart';
-import '../services/usage_feature_service.dart';
+import '../navigation_menu.dart';
 import '../services/category_service.dart';
-import '../util/time_formatter.dart';
-import '../widget/appbar/appbar.dart';
-import 'app_details_screen.dart';
+import '../services/usage_feature_service.dart';
+import 'dashboard/ai_analysis_screen.dart';
+import 'dashboard/ai_module_widgets.dart';
+import 'permission_screen.dart';
 
 class ResultScreen extends StatelessWidget {
-  final AIController controller = Get.put(AIController());
-
-  ResultScreen({super.key});
-
-  Color getRiskColor(double score) {
-    if (score > 0.7) return Colors.red;
-    if (score > 0.3) return Colors.orange;
-    return Colors.green;
-  }
-
-  String getRiskText(double score) {
-    if (score > 0.7) return "High Risk";
-    if (score > 0.3) return "Moderate Risk";
-    return "Low Risk";
-  }
+  const ResultScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
+    final controller = Get.find<AIController>();
+
+    return AiModuleScaffold(
+      title: 'Prediction Result',
+      subtitle:
+          'A calm snapshot of your current digital wellbeing, based on the information you chose to share with the app.',
+      showBack: false,
+      child: Obx(() {
+        final riskColor = AiModulePalette.riskColor(controller.riskCategory);
+        final primaryLabel = controller.hasSmartTrackingData
+            ? 'View Detailed Analysis'
+            : 'Enable Smart Tracking';
+
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(height: 30),
-              // 🔥 RISK CARD
-              Obx(() {
-                final score = controller.riskScore.value;
-                final color = getRiskColor(score);
-
-                return Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    children: [
-                      Text("Your Risk Score", style: TextStyle(fontSize: 16)),
-                      const SizedBox(height: 10),
-
-                      Text(
-                        "${(score * 100).toStringAsFixed(1)}%",
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: color,
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      Text(
-                        getRiskText(score),
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: color,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-
-              const SizedBox(height: 30),
-
-              // 💡 RECOMMENDATION
-              Obx(
-                () => Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    controller.recommendation.value,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              // 📊 INPUT DATA (only show if came from manual estimation or smart tracking)
-              Obx(() {
-                if (!controller.cameFromManualEstimation.value &&
-                    !controller.cameFromSmartTracking.value) {
-                  return const SizedBox.shrink();
-                }
-
-                return Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  margin: const EdgeInsets.only(top: 20),
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: controller.cameFromManualEstimation.value
-                          ? Colors.blue.shade200
-                          : Colors.green.shade200,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            controller.cameFromManualEstimation.value
-                                ? Icons.info_outline
-                                : Icons.track_changes,
-                            color: controller.cameFromManualEstimation.value
-                                ? Colors.blue.shade700
-                                : Colors.green.shade700,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            controller.cameFromManualEstimation.value
-                                ? 'Your Estimated Data'
-                                : 'Your Tracked Usage',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: controller.cameFromManualEstimation.value
-                                  ? Colors.blue.shade700
-                                  : Colors.green.shade700,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      if (controller.cameFromManualEstimation.value) ...[
-                        // Show all manual inputs
-                        _buildDataRow(
-                          'Age',
-                          '${controller.features[0].toInt()} years',
-                        ),
-                        _buildDataRow(
-                          'Sleep Hours',
-                          '${controller.features[1].toStringAsFixed(1)} hours',
-                        ),
-                        _buildDataRow(
-                          'Social Media',
-                          '${controller.features[2].toStringAsFixed(1)} hours',
-                        ),
-                        _buildDataRow(
-                          'Gaming',
-                          '${controller.features[3].toStringAsFixed(1)} hours',
-                        ),
-                        _buildDataRow(
-                          'Daily Screen Time',
-                          '${controller.features[4].toStringAsFixed(1)} hours',
-                        ),
-                        _buildDataRow(
-                          'Work/Study Hours',
-                          '${controller.features[5].toStringAsFixed(1)} hours',
-                        ),
-                        _buildDataRow(
-                          'Notifications',
-                          '${controller.features[6].toInt()} per day',
-                        ),
-                        _buildDataRow(
-                          'App Opens',
-                          '${controller.features[7].toInt()} per day',
-                        ),
-                        _buildDataRow(
-                          'Weekend Screen Time',
-                          '${controller.features[8].toStringAsFixed(1)} hours',
-                        ),
-                        _buildDataRow(
-                          'Stress Level',
-                          '${controller.features[9].toStringAsFixed(1)}/10',
-                        ),
-                        _buildDataRow(
-                          'Academic Impact',
-                          '${controller.features[10].toStringAsFixed(1)}/10',
-                        ),
-                        _buildDataRow(
-                          'Gender',
-                          controller.features[11] == 1.0 ? 'Male' : 'Female',
-                        ),
-                      ] else if (controller.cameFromSmartTracking.value) ...[
-                        // Show manual inputs but with tracked values updated
-                        _buildDataRow(
-                          'Age',
-                          '${controller.features[0].toInt()} years',
-                        ),
-                        _buildDataRow(
-                          'Sleep Hours',
-                          '${controller.features[1].toStringAsFixed(1)} hours',
-                        ),
-                        _buildDataRow(
-                          'Social Media',
-                          '${controller.features[2].toStringAsFixed(1)} hours',
-                          subtitle: 'Tracked from device',
-                        ),
-                        _buildDataRow(
-                          'Gaming',
-                          '${controller.features[3].toStringAsFixed(1)} hours',
-                          subtitle: 'Tracked from device',
-                        ),
-                        _buildDataRow(
-                          'Daily Screen Time',
-                          '${controller.features[4].toStringAsFixed(1)} hours',
-                          subtitle: 'Tracked from device',
-                        ),
-                        _buildDataRow(
-                          'Work/Study Hours',
-                          '${controller.features[5].toStringAsFixed(1)} hours',
-                        ),
-                        _buildDataRow(
-                          'Notifications',
-                          '${controller.features[6].toInt()} per day',
-                          subtitle: 'Estimated from usage',
-                        ),
-                        _buildDataRow(
-                          'App Opens',
-                          '${controller.features[7].toInt()} per day',
-                          subtitle: 'Tracked from device',
-                        ),
-                        _buildDataRow(
-                          'Weekend Screen Time',
-                          '${controller.features[8].toStringAsFixed(1)} hours',
-                          subtitle: 'Tracked from device',
-                        ),
-                        _buildDataRow(
-                          'Stress Level',
-                          '${controller.features[9].toStringAsFixed(1)}/10',
-                        ),
-                        _buildDataRow(
-                          'Academic Impact',
-                          '${controller.features[10].toStringAsFixed(1)}/10',
-                        ),
-                        _buildDataRow(
-                          'Gender',
-                          controller.features[11] == 1.0 ? 'Male' : 'Female',
-                        ),
-                      ],
-                    ],
-                  ),
-                );
-              }),
-              SizedBox(height: 20),
-
-              // � TOP APPS SECTION (only show for smart tracking)
-              Obx(() {
-                if (!controller.cameFromSmartTracking.value) {
-                  return const SizedBox.shrink();
-                }
-
-                return FutureBuilder<List<Map<String, dynamic>>>(
-                  future: UsageFeatureService(
-                    CategoryService(),
-                  ).getTopApps(limit: 5),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: const Center(child: CircularProgressIndicator()),
-                      );
-                    }
-
-                    if (snapshot.hasError ||
-                        !snapshot.hasData ||
-                        snapshot.data!.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-
-                    final topApps = snapshot.data!;
-
-                    return GestureDetector(
-                      onTap: () => Get.to(() => const AppDetailsScreen()),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: Column(
+              AiFadeSlideIn(
+                child: AiGlassCard(
+                  padding: EdgeInsets.zero,
+                  gradient: WellbeingTheme.heroGradient,
+                  child: Padding(
+                    padding: const EdgeInsets.all(22),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final wide = constraints.maxWidth > 520;
+                        final details = Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
+                            AiStatusBadge(
+                              label: '${controller.riskCategory} support need',
+                              color: riskColor,
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              controller.supportiveMessage,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 23,
+                                height: 1.2,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
                               children: [
-                                Icon(Icons.apps, color: Colors.purple.shade700),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Your Top Apps',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.purple.shade700,
-                                    ),
-                                  ),
+                                AiMetricPill(
+                                  label: 'Confidence',
+                                  value:
+                                      '${(controller.confidenceScore * 100).round()}%',
                                 ),
-                                Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 16,
-                                  color: Colors.purple.shade600,
+                                AiMetricPill(
+                                  label: 'Source',
+                                  value: controller.hasSmartTrackingData
+                                      ? 'Smart Tracking'
+                                      : 'Manual Assessment',
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            ...topApps.map(
-                              (app) => Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 4,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        app['appName'] ??
-                                            app['packageName'] ??
-                                            'Unknown App',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.purple.shade700,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    Text(
-                                      TimeFormatter.formatHours(
-                                        app['usageHours'] as double,
-                                      ),
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Center(
-                              child: Text(
-                                'Tap to see all apps →',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.purple.shade600,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ),
                           ],
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }),
+                        );
 
-              SizedBox(height: 20),
-
-              // 🚀 SMART BUTTON (context-aware based on user flow)
-              Obx(() {
-                String buttonText = "Analyze My Usage";
-                Color buttonColor = Colors.blue;
-                bool isEnabled = true;
-                String? helpText;
-
-                if (controller.cameFromSmartTracking.value) {
-                  buttonText = "📱 Re-analyze Your Usage";
-                  buttonColor = Colors.green;
-                  helpText = "Update your analysis with latest device data";
-                } else if (controller.cameFromManualEstimation.value) {
-                  buttonText = "✨ Finalize Analysis";
-                  buttonColor = Colors.orange;
-                  helpText = "Calculate your digital wellbeing score";
-                } else {
-                  isEnabled = false;
-                  helpText = "Please complete tracking or manual entry first";
-                }
-
-                return Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: ElevatedButton(
-                        onPressed: isEnabled
-                            ? () async {
-                                await controller.runInference();
-                              }
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: buttonColor,
-                          disabledBackgroundColor: Colors.grey.shade300,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Obx(
-                          () => Text(
-                            controller.isProcessing.value
-                                ? "Processing..."
-                                : buttonText,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: !isEnabled
-                                  ? Colors.grey.shade600
-                                  : Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
+                        return wide
+                            ? Row(
+                                children: [
+                                  AiAnimatedProgressRing(
+                                    progress: controller.riskScore.value,
+                                    color: riskColor,
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Expanded(child: details),
+                                ],
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  AiAnimatedProgressRing(
+                                    progress: controller.riskScore.value,
+                                    color: riskColor,
+                                  ),
+                                  const SizedBox(height: 20),
+                                  details,
+                                ],
+                              );
+                      },
                     ),
-                    if (helpText != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        helpText,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                          fontStyle: FontStyle.italic,
-                        ),
-                        textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              AiFadeSlideIn(
+                delayMs: 100,
+                child: AiGlassCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const AiSectionTitle(
+                        icon: Icons.psychology_alt_rounded,
+                        title: 'Prediction Snapshot',
+                        color: AiModulePalette.teal,
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          AiMetricPill(
+                            label: 'Current risk estimate',
+                            value:
+                                '${(controller.riskScore.value * 100).round()}%',
+                          ),
+                          AiMetricPill(
+                            label: 'Current level',
+                            value: controller.riskCategory,
+                          ),
+                          if (controller.lastAnalyzedAt.value != null)
+                            AiMetricPill(
+                              label: 'Last analyzed',
+                              value: _formatDate(
+                                controller.lastAnalyzedAt.value!,
+                              ),
+                            ),
+                        ],
                       ),
                     ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              AiFadeSlideIn(
+                delayMs: 200,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AiPrimaryButton(
+                      label: primaryLabel,
+                      onPressed: () async {
+                        if (controller.hasSmartTrackingData) {
+                          await _openDetailedAnalysis();
+                        } else {
+                          Get.to(() => const PermissionScreen());
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    AiSecondaryButton(
+                      label: 'Go to Dashboard',
+                      onPressed: () {
+                        Get.offAll(() => const NavigationMenu(initialIndex: 1));
+                      },
+                    ),
                   ],
-                );
-              }),
+                ),
+              ),
             ],
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 
-  Widget _buildDataRow(String label, String value, {String? subtitle}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.blue.shade700,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
-        ],
-      ),
+  String _formatDate(DateTime timestamp) {
+    final hour = timestamp.hour > 12 ? timestamp.hour - 12 : timestamp.hour;
+    final meridiem = timestamp.hour >= 12 ? 'PM' : 'AM';
+    final normalizedHour = hour == 0 ? 12 : hour;
+    final minute = timestamp.minute.toString().padLeft(2, '0');
+    return '$normalizedHour:$minute $meridiem';
+  }
+
+  Future<void> _openDetailedAnalysis() async {
+    await EasyLoading.show(
+      status: 'Opening detailed analysis...',
+      maskType: EasyLoadingMaskType.black,
     );
+
+    try {
+      final controller = Get.find<AIController>();
+      await controller.loadUsage();
+
+      final topApps = await UsageFeatureService(
+        CategoryService(),
+      ).getTopApps(limit: 5);
+
+      EasyLoading.dismiss();
+      Get.to(() => AIAnalysisScreen(initialTopApps: topApps));
+    } catch (_) {
+      EasyLoading.dismiss();
+      Get.to(() => const AIAnalysisScreen());
+    }
   }
 }

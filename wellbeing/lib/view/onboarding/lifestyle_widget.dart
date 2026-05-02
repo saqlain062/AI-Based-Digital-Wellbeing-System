@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:wellbeing/util/theme/wellbeing_theme.dart';
+
 import '../../controller/onboarding_controller.dart';
+import 'basic_info_widget.dart';
 
 class LifestyleWidget extends StatelessWidget {
   const LifestyleWidget({super.key});
@@ -14,329 +17,239 @@ class LifestyleWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Your daily routine",
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.green,
-            ),
+          Text(
+            'Your daily routine',
+            style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 10),
-          const Text(
-            "Set your sleep window and work hours for a smarter estimate.",
-            style: TextStyle(fontSize: 16, color: Colors.grey),
+          Text(
+            'A simple picture of your routine helps the app compare screen habits with the rest of your day.',
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
-
-          const SizedBox(height: 40),
-
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Obx(
-                    () => SwitchListTile.adaptive(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      activeColor: Colors.green,
-                      title: const Text(
-                        'Estimate from bedtime / wake time',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      subtitle: Text(
-                        c.showSleepIndicator.value
-                            ? 'Drag the slider to set your sleep duration manually.'
-                            : 'Sleep length is calculated from your selected window.',
-                        style: const TextStyle(color: Colors.grey),
-                      ),
-                      value: c.showSleepIndicator.value,
-                      onChanged: c.toggleSleepIndicator,
+          const SizedBox(height: 28),
+          OnboardingCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const OnboardingSectionLabel(
+                  icon: Icons.bedtime_rounded,
+                  title: 'Sleep routine',
+                ),
+                const SizedBox(height: 10),
+                Obx(
+                  () => SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Set sleep manually'),
+                    subtitle: Text(
+                      c.showSleepIndicator.value
+                          ? 'Use the slider if your sleep varies from day to day.'
+                          : 'Use bedtime and wake time for a more natural estimate.',
                     ),
+                    value: c.showSleepIndicator.value,
+                    onChanged: c.toggleSleepIndicator,
                   ),
-
-                  const SizedBox(height: 8),
-                  Obx(
-                    () => c.showSleepIndicator.value
-                        ? const SizedBox.shrink()
-                        : Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.bedtime,
-                                          color: Colors.green.shade700,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        const Text(
-                                          "Bedtime",
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Obx(
-                                      () => OutlinedButton(
-                                        onPressed: c.useSleepWindow.value
-                                            ? () async {
-                                                final picked =
-                                                    await showTimePicker(
-                                                      context: context,
-                                                      initialTime:
-                                                          c.bedTime.value,
-                                                    );
-                                                if (picked != null) {
-                                                  c.bedTime.value = picked;
-                                                  if (c.useSleepWindow.value) {
-                                                    c.sleepHours.value =
-                                                        c.calculatedSleepHours;
-                                                  }
-                                                }
-                                              }
-                                            : null,
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor:
-                                              c.useSleepWindow.value
-                                              ? Colors.green.shade900
-                                              : Colors.grey.shade500,
-                                          side: BorderSide(
-                                            color: c.useSleepWindow.value
-                                                ? Colors.green.shade200
-                                                : Colors.grey.shade300,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          c.bedTime.value.format(context),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                ),
+                const SizedBox(height: 8),
+                Obx(
+                  () => c.showSleepIndicator.value
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            RichText(
+                              text: TextSpan(
+                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  color: WellbeingDecor.textSecondary(context),
                                 ),
+                                children: [
+                                  TextSpan(
+                                    text: c.sleepHours.value.toStringAsFixed(1),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineMedium
+                                        ?.copyWith(color: WellbeingTheme.indigo),
+                                  ),
+                                  const TextSpan(text: ' hours sleep'),
+                                ],
                               ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.wb_sunny,
-                                          color: Colors.green.shade700,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        const Text(
-                                          "Wake time",
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Obx(
-                                      () => OutlinedButton(
-                                        onPressed: c.useSleepWindow.value
-                                            ? () async {
-                                                final picked =
-                                                    await showTimePicker(
-                                                      context: context,
-                                                      initialTime:
-                                                          c.wakeTime.value,
-                                                    );
-                                                if (picked != null) {
-                                                  c.wakeTime.value = picked;
-                                                  if (c.useSleepWindow.value) {
-                                                    c.sleepHours.value =
-                                                        c.calculatedSleepHours;
-                                                  }
-                                                }
-                                              }
-                                            : null,
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor:
-                                              c.useSleepWindow.value
-                                              ? Colors.green.shade900
-                                              : Colors.grey.shade500,
-                                          side: BorderSide(
-                                            color: c.useSleepWindow.value
-                                                ? Colors.green.shade200
-                                                : Colors.grey.shade300,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          c.wakeTime.value.format(context),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                  ),
-
-                  const SizedBox(height: 8),
-                  Obx(
-                    () => c.showSleepIndicator.value
-                        ? SizedBox.shrink()
-                        : Text(
-                            'Approx. ${c.sleepHours.value.toStringAsFixed(1)} hours of rest',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
                             ),
-                          ),
-                  ),
-
-                  Obx(
-                    () => c.showSleepIndicator.value
-                        ? Column(
-                            children: [
-                              Obx(
-                                () => Row(
-                                  children: [
-                                    Text(
-                                      c.sleepHours.value.toStringAsFixed(1),
-                                      style: const TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      'hours sleep',
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                  ],
-                                ),
+                            const SizedBox(height: 8),
+                            Slider(
+                              value: c.sleepHours.value,
+                              min: 3,
+                              max: 12,
+                              divisions: 18,
+                              label: c.sleepHours.value.toStringAsFixed(1),
+                              onChanged: (value) => c.sleepHours.value = value,
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: _TimeButton(
+                                label: 'Bedtime',
+                                icon: Icons.nights_stay_rounded,
+                                time: c.bedTime.value,
+                                onTap: () async {
+                                  final picked = await showTimePicker(
+                                    context: context,
+                                    initialTime: c.bedTime.value,
+                                  );
+                                  if (picked != null) {
+                                    c.bedTime.value = picked;
+                                    c.sleepHours.value = c.calculatedSleepHours;
+                                  }
+                                },
                               ),
-                              Obx(
-                                () => Slider(
-                                  value: c.sleepHours.value,
-                                  min: 3,
-                                  max: 12,
-                                  divisions: 18,
-                                  label: c.sleepHours.value.toStringAsFixed(1),
-                                  activeColor: Colors.green,
-                                  onChanged: (value) =>
-                                      c.sleepHours.value = value,
-                                ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _TimeButton(
+                                label: 'Wake time',
+                                icon: Icons.wb_sunny_outlined,
+                                time: c.wakeTime.value,
+                                onTap: () async {
+                                  final picked = await showTimePicker(
+                                    context: context,
+                                    initialTime: c.wakeTime.value,
+                                  );
+                                  if (picked != null) {
+                                    c.wakeTime.value = picked;
+                                    c.sleepHours.value = c.calculatedSleepHours;
+                                  }
+                                },
                               ),
-                            ],
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
-              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ],
             ),
           ),
-
-          const SizedBox(height: 30),
-
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.work, color: Colors.green.shade700),
-                      const SizedBox(width: 8),
-                      const Text(
-                        "Work Hours",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
+          const SizedBox(height: 18),
+          OnboardingCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const OnboardingSectionLabel(
+                  icon: Icons.school_rounded,
+                  title: 'Work or study hours',
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'About how much focused work or study time fits into a usual day?',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 14),
+                Obx(
+                  () => RichText(
+                    text: TextSpan(
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: WellbeingDecor.textSecondary(context),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Obx(
-                        () => Text(
-                          c.workHours.value.toStringAsFixed(1),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                      children: [
+                        TextSpan(
+                          text: c.workHours.value.toStringAsFixed(1),
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: WellbeingTheme.cyan,
                           ),
                         ),
-                      ),
-                      const Text(
-                        " hours per day",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),
-                  Obx(
-                    () => Slider(
-                      value: c.workHours.value,
-                      min: 0,
-                      max: 12,
-                      divisions: 24,
-                      label: c.workHours.value.toStringAsFixed(1),
-                      activeColor: Colors.green,
-                      onChanged: (v) => c.workHours.value = v,
+                        const TextSpan(text: ' hours per day'),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 8),
+                Obx(
+                  () => Slider(
+                    value: c.workHours.value,
+                    min: 0,
+                    max: 12,
+                    divisions: 24,
+                    label: c.workHours.value.toStringAsFixed(1),
+                    onChanged: (v) => c.workHours.value = v,
+                  ),
+                ),
+              ],
             ),
           ),
-
           const SizedBox(height: 20),
-
           Row(
             children: [
-              TextButton(
-                onPressed: c.back,
-                style: TextButton.styleFrom(foregroundColor: Colors.green),
-                child: const Text("Back", style: TextStyle(fontSize: 16)),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: c.back,
+                  child: const Text('Back'),
+                ),
               ),
-              const Spacer(),
-              SizedBox(
-                width: 130,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: c.next,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: WellbeingTheme.primaryGradient,
+                    borderRadius: WellbeingTheme.buttonRadius,
+                    boxShadow: WellbeingTheme.softShadow,
                   ),
-                  child: const Text(
-                    "Continue",
-                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  child: ElevatedButton(
+                    onPressed: c.next,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                    ),
+                    child: const Text('Next'),
                   ),
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TimeButton extends StatelessWidget {
+  const _TimeButton({
+    required this.label,
+    required this.icon,
+    required this.time,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final TimeOfDay time;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: WellbeingDecor.tintedSurface(context),
+        borderRadius: WellbeingTheme.inputRadius,
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: WellbeingTheme.indigo),
+              const SizedBox(width: 8),
+              Text(label, style: Theme.of(context).textTheme.titleMedium),
+            ],
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: onTap,
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(44),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: Text(time.format(context)),
           ),
         ],
       ),

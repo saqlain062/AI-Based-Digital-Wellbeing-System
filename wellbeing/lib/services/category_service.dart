@@ -147,12 +147,15 @@ class CategoryService {
     return HiveService.instance.getAllCategories();
   }
 
-  Future<List<Map<String, dynamic>>> scanInstalledApps() async {
+  Future<List<Map<String, dynamic>>> scanInstalledApps({
+    bool includeIcons = false,
+  }) async {
     await init();
 
     final installedApps = await FlutterDeviceApps.listApps(
       includeSystem: false,
       onlyLaunchable: true,
+      includeIcons: includeIcons,
     );
 
     final hive = HiveService.instance;
@@ -187,7 +190,7 @@ class CategoryService {
         'packageName': packageName,
         'appName': app.appName ?? 'Unknown App',
         'category': category,
-        'icon': null,
+        'iconBytes': app.iconBytes,
       });
     }
 

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:wellbeing/util/theme/wellbeing_theme.dart';
 
 import '../controller/ai_controller.dart';
 import '../controller/onboarding_controller.dart';
-import '../services/hive_service.dart';
 import '../navigation_menu.dart';
+import '../services/hive_service.dart';
+import 'onboarding/basic_info_widget.dart';
 
 class ManualEstimationScreen extends StatelessWidget {
   const ManualEstimationScreen({super.key});
@@ -12,323 +14,143 @@ class ManualEstimationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Get.put(OnboardingController());
-    final ai = Get.put(AIController());
+    final ai = Get.find<AIController>();
 
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.green.shade50,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.green),
-          onPressed: () {
-            c.showManualInputs.value = false;
-            Get.back();
-          },
-        ),
-        title: const Text(
-          'Estimate Your Usage',
-          style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
-        ),
-      ),
+      appBar: AppBar(title: const Text('Manual Input')),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              const Text(
-                'Tell us about your daily habits',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Adjust the sliders to match your typical usage patterns.',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-
-              const SizedBox(height: 30),
-
-              // ===== SECTION 1: DEVICE USAGE =====
-              _buildSectionHeader('📱 Device Usage', Colors.blue),
-              const SizedBox(height: 16),
-              _buildSliderCard(
-                context,
-                title: 'Daily Screen Time',
-                subtitle: 'Total hours spent on your device',
-                icon: Icons.fit_screen_outlined,
-                value: c.manualScreenTime,
-                min: 0,
-                max: 12,
-                unit: 'hours',
-              ),
-              const SizedBox(height: 12),
-              _buildSliderCard(
-                context,
-                title: 'Weekend Screen Time',
-                subtitle: 'Hours spent on weekends',
-                icon: Icons.weekend,
-                value: c.weekendScreen,
-                min: 0,
-                max: 12,
-                unit: 'hours',
-              ),
-
-              const SizedBox(height: 28),
-
-              // ===== SECTION 2: APP USAGE =====
-              _buildSectionHeader('🎮 App & Content Usage', Colors.orange),
-              const SizedBox(height: 16),
-              _buildSliderCard(
-                context,
-                title: 'Social Media Hours',
-                subtitle: 'Time on social platforms',
-                icon: Icons.people,
-                value: c.manualSocial,
-                min: 0,
-                max: 10,
-                unit: 'hours',
-              ),
-              const SizedBox(height: 12),
-              _buildSliderCard(
-                context,
-                title: 'Gaming Hours',
-                subtitle: 'Time spent gaming',
-                icon: Icons.gamepad,
-                value: c.manualGaming,
-                min: 0,
-                max: 10,
-                unit: 'hours',
-              ),
-
-              const SizedBox(height: 28),
-
-              // ===== SECTION 3: INTERACTIONS =====
-              _buildSectionHeader('⚡ Daily Interactions', Colors.purple),
-              const SizedBox(height: 16),
-              _buildSliderCard(
-                context,
-                title: 'App Opens',
-                subtitle: 'Times you open apps per day',
-                icon: Icons.touch_app,
-                value: c.appOpens,
-                min: 0,
-                max: 200,
-                unit: 'opens',
-              ),
-              const SizedBox(height: 12),
-              _buildSliderCard(
-                context,
-                title: 'Notifications',
-                subtitle: 'Notifications received daily',
-                icon: Icons.notifications,
-                value: c.notifications,
-                min: 0,
-                max: 200,
-                unit: 'notifications',
-              ),
-
-              const SizedBox(height: 40),
-
-              // Action Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: Colors.green, width: 2),
-                      ),
-                      onPressed: () {
-                        c.showManualInputs.value = false;
-                        Get.back();
-                      },
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Add your best estimate',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Use a rough estimate if smart tracking is not enabled yet. You can always turn it on later for more detailed insights.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 24),
+            _SectionHeader(
+              title: 'Device Usage',
+              icon: Icons.phone_android_rounded,
+            ),
+            const SizedBox(height: 14),
+            _SliderCard(
+              title: 'Daily Screen Time',
+              subtitle: 'Total hours spent on your device',
+              icon: Icons.fit_screen_outlined,
+              value: c.manualScreenTime,
+              min: 0,
+              max: 12,
+              unit: 'hours',
+            ),
+            const SizedBox(height: 12),
+            _SliderCard(
+              title: 'Weekend Screen Time',
+              subtitle: 'How much higher weekends tend to feel',
+              icon: Icons.weekend_rounded,
+              value: c.weekendScreen,
+              min: 0,
+              max: 12,
+              unit: 'hours',
+            ),
+            const SizedBox(height: 20),
+            _SectionHeader(
+              title: 'App & Content Usage',
+              icon: Icons.grid_view_rounded,
+            ),
+            const SizedBox(height: 14),
+            _SliderCard(
+              title: 'Social Media Hours',
+              subtitle: 'Time spent on social apps',
+              icon: Icons.people_alt_rounded,
+              value: c.manualSocial,
+              min: 0,
+              max: 10,
+              unit: 'hours',
+            ),
+            const SizedBox(height: 12),
+            _SliderCard(
+              title: 'Gaming Hours',
+              subtitle: 'Average time spent gaming',
+              icon: Icons.sports_esports_rounded,
+              value: c.manualGaming,
+              min: 0,
+              max: 10,
+              unit: 'hours',
+            ),
+            const SizedBox(height: 20),
+            _SectionHeader(
+              title: 'Interactions',
+              icon: Icons.touch_app_rounded,
+            ),
+            const SizedBox(height: 14),
+            _SliderCard(
+              title: 'App Opens',
+              subtitle: 'How often you open apps each day',
+              icon: Icons.touch_app_rounded,
+              value: c.appOpens,
+              min: 0,
+              max: 200,
+              unit: 'opens',
+            ),
+            const SizedBox(height: 12),
+            _SliderCard(
+              title: 'Notifications',
+              subtitle: 'Notifications received per day',
+              icon: Icons.notifications_active_rounded,
+              value: c.notifications,
+              min: 0,
+              max: 200,
+              unit: 'notifications',
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      c.showManualInputs.value = false;
+                      Get.back();
+                    },
+                    child: const Text('Go Back'),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: WellbeingTheme.primaryGradient,
+                      borderRadius: WellbeingTheme.buttonRadius,
+                      boxShadow: WellbeingTheme.softShadow,
+                    ),
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
                       onPressed: () async {
                         _setCommonFeatures(c, ai);
                         c.saveProfile();
 
-                        // Set manual usage features
-                        ai.setFeature(
-                          'daily_screen_time',
-                          c.manualScreenTime.value,
-                        );
-                        ai.setFeature(
-                          'social_media_hours',
-                          c.manualSocial.value,
-                        );
+                        ai.setFeature('daily_screen_time', c.manualScreenTime.value);
+                        ai.setFeature('social_media_hours', c.manualSocial.value);
                         ai.setFeature('gaming_hours', c.manualGaming.value);
                         ai.setFeature('notifications', c.notifications.value);
                         ai.setFeature('app_opens', c.appOpens.value);
                         ai.setFeature('weekend_screen', c.weekendScreen.value);
-
-                        // Mark that user came from manual estimation
                         ai.setCameFromManualEstimation();
 
-                        // Run AI
                         await ai.runInference();
-                        HiveService.instance.saveBool(
-                          'onboardingCompleted',
-                          true,
-                        );
-
-                        Get.offAll(() => const NavigationMenu());
+                        HiveService.instance.saveBool('onboardingCompleted', true);
+                        Get.offAll(() => const NavigationMenu(initialIndex: 0));
                       },
-                      child: const Text(
-                        'Continue',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
                       ),
+                      child: const Text('See My Result'),
                     ),
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color, width: 1.5),
-      ),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: color,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSliderCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required RxDouble value,
-    required double min,
-    required double max,
-    required String unit,
-  }) {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, color: Colors.green, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Obx(
-                  () => Text(
-                    '${value.value.toStringAsFixed(value.value % 1 == 0 ? 0 : 1)} $unit',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 8),
-            Obx(
-              () => Slider(
-                value: value.value,
-                min: min,
-                max: max,
-                divisions: ((max - min) / 0.5).toInt(),
-                label: value.value.toStringAsFixed(1),
-                activeColor: Colors.green,
-                inactiveColor: Colors.green.shade100,
-                onChanged: (v) => value.value = v,
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  min.toStringAsFixed(0),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                Text(
-                  max.toStringAsFixed(0),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
@@ -345,5 +167,120 @@ class ManualEstimationScreen extends StatelessWidget {
     ai.setFeature('work_study_hours', c.workHours.value);
     ai.setFeature('stress_level', c.stressLevel.value);
     ai.setFeature('academic_impact', c.academicImpact.value);
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, required this.icon});
+
+  final String title;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: WellbeingDecor.tintedSurface(context),
+        borderRadius: WellbeingTheme.cardRadius,
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              gradient: WellbeingTheme.primaryGradient,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: Colors.white, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Text(title, style: Theme.of(context).textTheme.titleLarge),
+        ],
+      ),
+    );
+  }
+}
+
+class _SliderCard extends StatelessWidget {
+  const _SliderCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.unit,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final RxDouble value;
+  final double min;
+  final double max;
+  final String unit;
+
+  @override
+  Widget build(BuildContext context) {
+    return OnboardingCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: WellbeingDecor.tintedSurface(context),
+                ),
+                child: Icon(icon, color: WellbeingTheme.indigo, size: 18),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: Theme.of(context).textTheme.titleMedium),
+                    Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Obx(
+            () => Text(
+              '${value.value.toStringAsFixed(value.value % 1 == 0 ? 0 : 1)} $unit',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: WellbeingTheme.indigo,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Obx(
+            () => Slider(
+              value: value.value,
+              min: min,
+              max: max,
+              divisions: ((max - min) / 0.5).toInt(),
+              label: value.value.toStringAsFixed(1),
+              onChanged: (v) => value.value = v,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(min.toStringAsFixed(0), style: Theme.of(context).textTheme.bodySmall),
+              Text(max.toStringAsFixed(0), style: Theme.of(context).textTheme.bodySmall),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

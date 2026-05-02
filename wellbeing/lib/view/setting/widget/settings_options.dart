@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:wellbeing/util/theme/wellbeing_theme.dart';
 import 'package:wellbeing/view/perimission/permission_screen.dart';
 import 'package:wellbeing/view/permission_screen.dart';
 import 'package:wellbeing/view/setting/profile_screen.dart';
@@ -151,13 +152,16 @@ class SettingTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor = isDark ? Colors.white : Colors.black;
+    final iconColor = isDark
+        ? WellbeingTheme.darkTextPrimary
+        : WellbeingTheme.lightTextPrimary;
 
     return Card(
-      elevation: 0,
+      color: WellbeingDecor.surface(context),
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
-        contentPadding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         onTap: onTap,
 
         // 🔹 Leading Icon
@@ -177,7 +181,7 @@ class SettingTile extends StatelessWidget {
             ? Text(
                 subtitle!,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: const Color.fromRGBO(141, 143, 148, 1),
+                  color: WellbeingDecor.textSecondary(context),
                 ),
               )
             : null,

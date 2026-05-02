@@ -18,6 +18,8 @@ class UsageFeatureService {
 
   Future<Map<String, double>> getUsageFeatures() async {
     try {
+      await categoryService.init();
+
       // 1️⃣ Installed apps
       final apps = await FlutterDeviceApps.listApps(
         includeSystem: false,
@@ -173,8 +175,13 @@ class UsageFeatureService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getTopApps({int limit = 5}) async {
+  Future<List<Map<String, dynamic>>> getTopApps({
+    int limit = 5,
+    bool includeIcons = true,
+  }) async {
     try {
+      await categoryService.init();
+
       final apps = await FlutterDeviceApps.listApps(
         includeSystem: false,
         onlyLaunchable: true,
@@ -234,7 +241,19 @@ class UsageFeatureService {
         (a, b) =>
             (b['usageHours'] as double).compareTo(a['usageHours'] as double),
       );
-      return appList.take(limit).toList();
+
+      final topApps = appList.take(limit).toList();
+      if (includeIcons) {
+        for (final app in topApps) {
+          final detailedApp = await FlutterDeviceApps.getApp(
+            app['packageName'] as String,
+            includeIcon: true,
+          );
+          app['iconBytes'] = detailedApp?.iconBytes;
+        }
+      }
+
+      return topApps;
     } catch (e) {
       if (kDebugMode) {
         log('❌ getTopApps error: $e');

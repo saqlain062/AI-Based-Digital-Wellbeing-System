@@ -1,94 +1,191 @@
 import 'package:flutter/material.dart';
 
+import '../dashboard/ai_module_widgets.dart';
+
 class TermsOfServiceScreen extends StatelessWidget {
   const TermsOfServiceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Terms of Service')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
+    return AiModuleScaffold(
+      title: 'Terms of Service',
+      subtitle:
+          'A clearer summary of the basic terms for using Wellbeing AI on your device.',
+      showBack: true,
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: const [
-            Text(
-              'Agreement to Terms',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            AiFadeSlideIn(child: _TermsHeroCard()),
+            SizedBox(height: 18),
+            AiFadeSlideIn(
+              delayMs: 100,
+              child: _TermsSectionCard(
+                title: 'Using The App',
+                icon: Icons.mobile_friendly_rounded,
+                lines: [
+                  'The app is intended for personal wellbeing use',
+                  'You may use it to understand habits, reports, and AI-based insights',
+                  'Please use the app in a lawful and respectful way',
+                ],
+              ),
             ),
-            SizedBox(height: 8),
-            Text(
-              'By using Mindful, you agree to these terms and conditions.',
-              style: TextStyle(color: Colors.grey),
+            SizedBox(height: 18),
+            AiFadeSlideIn(
+              delayMs: 180,
+              child: _TermsSectionCard(
+                title: 'Important Limits',
+                icon: Icons.info_outline_rounded,
+                lines: [
+                  'The app offers general wellbeing guidance',
+                  'It is not a replacement for professional medical or mental health care',
+                  'Predictions and recommendations are meant to support reflection, not make decisions for you',
+                ],
+              ),
             ),
-            SizedBox(height: 24),
-            Text(
-              'Last updated: April 27, 2026',
-              style: TextStyle(fontWeight: FontWeight.w600),
+            SizedBox(height: 18),
+            AiFadeSlideIn(
+              delayMs: 260,
+              child: _TermsSectionCard(
+                title: 'App Changes',
+                icon: Icons.update_rounded,
+                lines: [
+                  'Features and wording may improve over time',
+                  'Some experiences may change as tracking, reports, or support tools evolve',
+                  'Continued use means you accept those reasonable updates',
+                ],
+              ),
             ),
-            SizedBox(height: 20),
-            Text(
-              '1. Acceptance of Terms',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'By accessing and using Mindful, you accept and agree to be bound by the terms and provision of this agreement.',
-            ),
-            SizedBox(height: 20),
-            Text(
-              '2. Use License',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Permission is granted to use this app for personal, non-commercial purposes. You may not:\n\n• Modify or copy the app materials\n• Use the materials for commercial purposes\n• Attempt to reverse engineer any software\n• Remove any copyright or proprietary notations',
-            ),
-            SizedBox(height: 20),
-            Text(
-              '3. Disclaimer',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'This app provides general wellbeing information and is not a substitute for professional medical advice, diagnosis, or treatment.',
-            ),
-            SizedBox(height: 20),
-            Text(
-              '4. Account Responsibilities',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'You are responsible for maintaining the confidentiality of your account credentials.',
-            ),
-            SizedBox(height: 20),
-            Text(
-              '5. Limitation of Liability',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'In no event shall Mindful or its creators be liable for any damages arising out of the use or inability to use this app.',
-            ),
-            SizedBox(height: 20),
-            Text(
-              '6. Changes to Terms',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'We reserve the right to modify these terms at any time. Continued use of the app constitutes acceptance of updated terms.',
-            ),
-            SizedBox(height: 20),
-            Text(
-              '7. Contact Information',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Questions about these terms? Contact us at legal@mindfulapp.com',
+            SizedBox(height: 18),
+            AiFadeSlideIn(
+              delayMs: 340,
+              child: _TermsFooterCard(
+                text:
+                    'Wellbeing AI is offered to help you notice patterns and make small, healthier adjustments. Using the app remains your choice, and your data stays tied to this device unless you decide otherwise in the future.',
+              ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TermsHeroCard extends StatelessWidget {
+  const _TermsHeroCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return AiGlassCard(
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          AiModulePalette.blue,
+          AiModulePalette.purple,
+          AiModulePalette.teal,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          AiSectionTitle(
+            icon: Icons.description_outlined,
+            title: 'Simple, human terms',
+            color: Colors.white,
+          ),
+          SizedBox(height: 14),
+          Text(
+            'These terms are here to set clear expectations. The short version is that the app is meant to support healthy reflection and should be used as a personal wellbeing tool.',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              height: 1.45,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TermsSectionCard extends StatelessWidget {
+  const _TermsSectionCard({
+    required this.title,
+    required this.icon,
+    required this.lines,
+  });
+
+  final String title;
+  final IconData icon;
+  final List<String> lines;
+
+  @override
+  Widget build(BuildContext context) {
+    return AiGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AiSectionTitle(
+            icon: icon,
+            title: title,
+            color: AiModulePalette.purple,
+          ),
+          const SizedBox(height: 14),
+          ...lines.map(
+            (line) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 3),
+                    child: Icon(
+                      Icons.check_circle_rounded,
+                      color: AiModulePalette.purple,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      line,
+                      style: TextStyle(
+                        color: AiModulePalette.textPrimary(context),
+                        fontSize: 14,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TermsFooterCard extends StatelessWidget {
+  const _TermsFooterCard({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return AiGlassCard(
+      child: Text(
+        text,
+        style: TextStyle(
+          color: AiModulePalette.textSecondary(context),
+          fontSize: 14,
+          height: 1.45,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

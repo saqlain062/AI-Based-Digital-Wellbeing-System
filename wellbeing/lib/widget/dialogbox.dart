@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wellbeing/util/theme/wellbeing_theme.dart';
 
 class SCustomDialog extends StatelessWidget {
   const SCustomDialog({
@@ -27,8 +28,11 @@ class SCustomDialog extends StatelessWidget {
       insetPadding: const EdgeInsets.all(24),
       child: Container(
         decoration: BoxDecoration(
-          color: isdark ? Colors.black26 : Colors.white,
-          borderRadius: BorderRadius.circular(10),
+          color: isdark ? WellbeingTheme.darkSurface : WellbeingTheme.lightSurface,
+          borderRadius: WellbeingTheme.cardRadius,
+          border: Border.all(
+            color: isdark ? Colors.white.withAlpha(18) : const Color(0xFFE2E8F0),
+          ),
         ),
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -57,13 +61,13 @@ class SCustomDialog extends StatelessWidget {
                 children: [
                   if (secondButton)
                     Expanded(
-                      child: Container(
+                  child: Container(
                         height: 60,
                         decoration: BoxDecoration(
                           color: isdark
-                              ? Colors.black26
-                              : const Color.fromRGBO(245, 245, 245, 1),
-                          borderRadius: BorderRadius.circular(8),
+                              ? Colors.white.withAlpha(8)
+                              : const Color(0xFFF8FAFC),
+                          borderRadius: WellbeingTheme.buttonRadius,
                         ),
                         child: TextButton(
                           style: ButtonStyle(

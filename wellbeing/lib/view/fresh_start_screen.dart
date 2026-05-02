@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:wellbeing/services/hive_service.dart';
-import 'package:wellbeing/util/theme/wellbeing_theme.dart';
-import 'package:wellbeing/view/onboarding_screen.dart';
 
-class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({super.key});
+import '../services/hive_service.dart';
+import '../util/theme/wellbeing_theme.dart';
+import 'onboarding_screen.dart';
 
-  void _markWelcomeSeen() {
-    HiveService.instance.saveBool('hasSeenWelcome', true);
+class FreshStartScreen extends StatelessWidget {
+  const FreshStartScreen({super.key});
+
+  void _continueToSetup() {
+    HiveService.instance.saveBool('needsFreshStart', false);
+    Get.offAll(() => OnboardingScreen());
   }
 
   @override
@@ -37,12 +39,12 @@ class WelcomeScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 12),
                 Text(
-                  'Welcome to Wellbeing',
+                  'Start Fresh',
                   style: Theme.of(context).textTheme.headlineLarge,
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  'A short setup helps Wellbeing AI understand your habits and offer more helpful guidance, right on your device.',
+                  'Your previous insight history has been cleared. A short setup will help us rebuild your wellbeing picture with fresh information.',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: textSecondary,
                     fontWeight: FontWeight.w500,
@@ -89,7 +91,7 @@ class WelcomeScreen extends StatelessWidget {
                                     ),
                                   ),
                                   child: const Icon(
-                                    Icons.spa_rounded,
+                                    Icons.refresh_rounded,
                                     color: Colors.white,
                                     size: 30,
                                   ),
@@ -99,7 +101,7 @@ class WelcomeScreen extends StatelessWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      'Understand your phone habits with calm, private support that helps you feel more in control.',
+                                      'Let\'s rebuild your wellbeing profile with a calm, clean setup.',
                                       style: Theme.of(context)
                                           .textTheme
                                           .headlineMedium
@@ -111,7 +113,7 @@ class WelcomeScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 14),
                                     Text(
-                                      'No account, no cloud sync, and no pressure. Just thoughtful insights, optional smart tracking, and small next steps that fit real life.',
+                                      'You will re-enter your personal details first, then choose smart tracking or manual input for a fresh result.',
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyLarge
@@ -138,15 +140,12 @@ class WelcomeScreen extends StatelessWidget {
                     boxShadow: WellbeingTheme.softShadow,
                   ),
                   child: ElevatedButton(
-                    onPressed: () {
-                      _markWelcomeSeen();
-                      Get.to(() => OnboardingScreen());
-                    },
+                    onPressed: _continueToSetup,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                     ),
-                    child: const Text('Begin Setup'),
+                    child: const Text('Start Setup'),
                   ),
                 ),
               ],

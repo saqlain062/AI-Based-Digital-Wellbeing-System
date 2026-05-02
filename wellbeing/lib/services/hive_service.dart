@@ -143,4 +143,112 @@ class HiveService {
     _ensureReady();
     return featureBox.toMap();
   }
+
+  List<Map<String, dynamic>> getAnalysisHistory() {
+    _ensureReady();
+    final raw = userBox.get('analysis_history', defaultValue: const []);
+    if (raw is! List) {
+      return const [];
+    }
+
+    return raw
+        .whereType<Map>()
+        .map((entry) => Map<String, dynamic>.from(entry))
+        .toList();
+  }
+
+  void saveAnalysisSnapshot(Map<String, dynamic> snapshot) {
+    _ensureReady();
+
+    if (!getBool('localHistoryEnabled', defaultValue: true)) {
+      return;
+    }
+
+    final timestamp = snapshot['timestamp']?.toString();
+    final dateKey =
+        snapshot['dateKey']?.toString() ??
+        (timestamp != null && timestamp.length >= 10
+            ? timestamp.substring(0, 10)
+            : null);
+
+    if (dateKey == null || dateKey.isEmpty) {
+      return;
+    }
+
+    final history = getAnalysisHistory()
+      ..removeWhere((entry) => entry['dateKey']?.toString() == dateKey)
+      ..add({...snapshot, 'dateKey': dateKey});
+
+    history.sort((a, b) {
+      final left = a['timestamp']?.toString() ?? '';
+      final right = b['timestamp']?.toString() ?? '';
+      return left.compareTo(right);
+    });
+
+    final trimmed = history.length > 120
+        ? history.sublist(history.length - 120)
+        : history;
+
+    userBox.put('analysis_history', trimmed);
+
+    if (kDebugMode) {
+      log('Saved analysis snapshot for $dateKey');
+    }
+  }
+
+  void clearAnalysisHistory() {
+    _ensureReady();
+    userBox.delete('analysis_history');
+    if (kDebugMode) {
+      log('Cleared local analysis history');
+    }
+  }
+
+  void clearLatestAnalysis() {
+    _ensureReady();
+    userBox.delete('lastAnalysis');
+    if (kDebugMode) {
+      log('Cleared latest analysis snapshot');
+    }
+  }
+
+  void clearStoredFeatures() {
+    _ensureReady();
+    featureBox.clear();
+    if (kDebugMode) {
+      log('Cleared stored feature values');
+    }
+  }
+
+  void clearCategoryOverrides() {
+    _ensureReady();
+    categoryBox.clear();
+    if (kDebugMode) {
+      log('Cleared custom app categories');
+    }
+  }
+
+  void clearLocalInsights() {
+    _ensureReady();
+    clearLatestAnalysis();
+    clearAnalysisHistory();
+    clearStoredFeatures();
+    userBox.delete('analysisSource');
+    if (kDebugMode) {
+      log('Cleared local insights data');
+    }
+  }
+
+  void clearProfileData() {
+    _ensureReady();
+    userBox.delete('profile_age');
+    userBox.delete('profile_gender');
+    userBox.delete('profile_sleep_hours');
+    userBox.delete('profile_work_study_hours');
+    userBox.delete('profile_stress_level');
+    userBox.delete('profile_academic_impact');
+    if (kDebugMode) {
+      log('Cleared stored profile data');
+    }
+  }
 }
