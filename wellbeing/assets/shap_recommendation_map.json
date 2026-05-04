@@ -1,0 +1,62 @@
+{
+  "rules": [
+    {
+      "id": "social_media_hours_high",
+      "feature": "social_media_hours",
+      "label": "Social media pattern",
+      "condition": "gte",
+      "threshold": 3.5,
+      "min_risk_score": 0.7,
+      "priority": 100,
+      "message": "Predictive Alert: Your social media pattern is currently the strongest driver of your risk. A short break or a smaller session target could help you feel more in control."
+    },
+    {
+      "id": "daily_screen_time_high",
+      "feature": "daily_screen_time_hours",
+      "label": "Daily screen time",
+      "condition": "gte",
+      "threshold": 6.0,
+      "min_risk_score": 0.7,
+      "priority": 90,
+      "message": "Proactive Nudge: Your total screen time is running high right now. A few deliberate offline breaks through the day could ease that load."
+    },
+    {
+      "id": "sleep_hours_low",
+      "feature": "sleep_hours",
+      "label": "Sleep routine",
+      "condition": "lte",
+      "threshold": 6.0,
+      "min_risk_score": 0.7,
+      "priority": 85,
+      "message": "Wellbeing Insight: Your sleep routine may be making digital habits harder to regulate. A steadier wind-down could help you feel more settled tomorrow."
+    },
+    {
+      "id": "app_opens_high",
+      "feature": "app_opens_per_day",
+      "label": "Frequent app checking",
+      "condition": "gte",
+      "threshold": 80.0,
+      "min_risk_score": 0.7,
+      "priority": 80,
+      "message": "Behavioral Trigger: Frequent app checking is adding extra switch-tasking pressure. A quieter notification window or a short focus block could help."
+    }
+  ],
+  "fallbacks": {
+    "high": {
+      "label": "Your current signals",
+      "message": "Your habits could use a little extra support right now. One small boundary you can keep this week is a good place to begin."
+    },
+    "moderate_stress": {
+      "label": "Stress level",
+      "message": "Your habits look manageable overall, though stress may be making them harder to regulate. Gentle boundaries during stressful moments could help most."
+    },
+    "moderate": {
+      "label": "Current balance",
+      "message": "Your habits are fairly steady, with a few signs of drift. Easing back on one repetitive behaviour could improve balance quite quickly."
+    },
+    "low": {
+      "label": "Current balance",
+      "message": "Your current pattern looks balanced. Keeping your sleep and screen routines steady should help you stay comfortable and in control."
+    }
+  }
+}

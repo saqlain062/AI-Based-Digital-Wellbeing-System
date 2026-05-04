@@ -57,16 +57,21 @@ class LifestyleWidget extends StatelessWidget {
                           children: [
                             RichText(
                               text: TextSpan(
-                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: WellbeingDecor.textSecondary(context),
-                                ),
+                                style: Theme.of(context).textTheme.bodyLarge
+                                    ?.copyWith(
+                                      color: WellbeingDecor.textSecondary(
+                                        context,
+                                      ),
+                                    ),
                                 children: [
                                   TextSpan(
                                     text: c.sleepHours.value.toStringAsFixed(1),
                                     style: Theme.of(context)
                                         .textTheme
                                         .headlineMedium
-                                        ?.copyWith(color: WellbeingTheme.indigo),
+                                        ?.copyWith(
+                                          color: WellbeingTheme.indigo,
+                                        ),
                                   ),
                                   const TextSpan(text: ' hours sleep'),
                                 ],
@@ -133,7 +138,7 @@ class LifestyleWidget extends StatelessWidget {
               children: [
                 const OnboardingSectionLabel(
                   icon: Icons.school_rounded,
-                  title: 'Work or study hours',
+                  title: 'Work hours',
                 ),
                 const SizedBox(height: 10),
                 Text(
@@ -150,9 +155,8 @@ class LifestyleWidget extends StatelessWidget {
                       children: [
                         TextSpan(
                           text: c.workHours.value.toStringAsFixed(1),
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: WellbeingTheme.cyan,
-                          ),
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(color: WellbeingTheme.cyan),
                         ),
                         const TextSpan(text: ' hours per day'),
                       ],

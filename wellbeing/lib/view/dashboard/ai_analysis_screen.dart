@@ -438,9 +438,8 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
       'Automatic screen time tracking',
       'App-level usage insights',
       'A more confident result',
-      'Recommendations shaped by real patterns',
+      'Recommendations based on your current signals',
     ];
-
     return AiGlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -506,6 +505,17 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
             color: AiModulePalette.teal,
           ),
           const SizedBox(height: 14),
+          if (controller.recommendationContext.value.isNotEmpty) ...[
+            Text(
+              'Based on ${controller.recommendationContext.value.toLowerCase()}',
+              style: TextStyle(
+                color: AiModulePalette.teal,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           Text(
             controller.recommendation.value,
             style: TextStyle(

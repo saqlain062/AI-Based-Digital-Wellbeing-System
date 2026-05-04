@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wellbeing/util/theme/wellbeing_theme.dart';
+import 'package:wellbeing/view/dashboard/ai_module_widgets.dart';
 
 class SCustomDialog extends StatelessWidget {
   const SCustomDialog({
@@ -28,10 +29,14 @@ class SCustomDialog extends StatelessWidget {
       insetPadding: const EdgeInsets.all(24),
       child: Container(
         decoration: BoxDecoration(
-          color: isdark ? WellbeingTheme.darkSurface : WellbeingTheme.lightSurface,
+          color: isdark
+              ? WellbeingTheme.darkSurface
+              : WellbeingTheme.lightSurface,
           borderRadius: WellbeingTheme.cardRadius,
           border: Border.all(
-            color: isdark ? Colors.white.withAlpha(18) : const Color(0xFFE2E8F0),
+            color: isdark
+                ? Colors.white.withAlpha(18)
+                : const Color(0xFFE2E8F0),
           ),
         ),
         child: Padding(
@@ -61,7 +66,7 @@ class SCustomDialog extends StatelessWidget {
                 children: [
                   if (secondButton)
                     Expanded(
-                  child: Container(
+                      child: Container(
                         height: 60,
                         decoration: BoxDecoration(
                           color: isdark
@@ -91,6 +96,19 @@ class SCustomDialog extends StatelessWidget {
                       ),
                     ),
                   const SizedBox(width: 14),
+
+                  // Flexible(
+                  //   child: ElevatedButton(
+                  //     onPressed: pressed2,
+                  //     child: Text(textButton2),
+                  //   ),
+                  // ),
+                  Flexible(
+                    child: AiPrimaryButton(
+                      label: textButton2,
+                      onPressed: pressed2,
+                    ),
+                  ),
 
                   // SblueButton(pressed: pressed2, textButton2: textButton2)
                 ],

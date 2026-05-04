@@ -243,7 +243,7 @@ class _UsageReportScreenState extends State<UsageReportScreen> {
         icon: Icons.spa_rounded,
       ),
       _ReportSignal(
-        label: 'Work or Study Hours',
+        label: 'Work Hours',
         value:
             '${controller.featureValue('work_study_hours').toStringAsFixed(1)} h',
         helper: 'Part of your balance profile',
@@ -292,11 +292,8 @@ class _UsageReportScreenState extends State<UsageReportScreen> {
           hours: current.hours + hours,
           apps: current.apps + 1,
         ),
-        ifAbsent: () => _CategorySummary(
-          category: category,
-          hours: hours,
-          apps: 1,
-        ),
+        ifAbsent: () =>
+            _CategorySummary(category: category, hours: hours, apps: 1),
       );
     }
 
@@ -550,11 +547,7 @@ class _CategorySummary {
   final double hours;
   final int apps;
 
-  _CategorySummary copyWith({
-    String? category,
-    double? hours,
-    int? apps,
-  }) {
+  _CategorySummary copyWith({String? category, double? hours, int? apps}) {
     return _CategorySummary(
       category: category ?? this.category,
       hours: hours ?? this.hours,

@@ -82,7 +82,9 @@ class _NavigationMenuState extends State<NavigationMenu> {
                   : WellbeingTheme.lightSurface.withAlpha(245),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: isDark ? Colors.white.withAlpha(18) : const Color(0xFFE2E8F0),
+                color: isDark
+                    ? Colors.white.withAlpha(18)
+                    : const Color(0xFFE2E8F0),
               ),
               boxShadow: WellbeingTheme.softShadow,
             ),
@@ -92,7 +94,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
               children: [
                 _buildNavItem(SImages.home, 'Result', 0),
                 _buildNavItem(SImages.history, 'Dashboard', 1),
-                _buildNavItem(SImages.contact, 'Contact', 2),
+                _buildNavItem(SImages.contact, 'Support', 2),
                 _buildNavItem(SImages.setting, 'Settings', 3),
               ],
             ),

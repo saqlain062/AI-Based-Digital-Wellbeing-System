@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../util/constants/app_links.dart';
 import '../dashboard/ai_module_widgets.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
@@ -17,10 +19,10 @@ class PrivacyPolicyScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: const [
-            AiFadeSlideIn(child: _PrivacyHeroCard()),
-            SizedBox(height: 18),
-            AiFadeSlideIn(
+          children: [
+            const AiFadeSlideIn(child: _PrivacyHeroCard()),
+            const SizedBox(height: 18),
+            const AiFadeSlideIn(
               delayMs: 100,
               child: _PolicySectionCard(
                 title: 'What Stays On Your Device',
@@ -32,8 +34,8 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: 18),
-            AiFadeSlideIn(
+            const SizedBox(height: 18),
+            const AiFadeSlideIn(
               delayMs: 180,
               child: _PolicySectionCard(
                 title: 'How The App Uses It',
@@ -45,8 +47,8 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: 18),
-            AiFadeSlideIn(
+            const SizedBox(height: 18),
+            const AiFadeSlideIn(
               delayMs: 260,
               child: _PolicySectionCard(
                 title: 'What We Do Not Do',
@@ -58,8 +60,8 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: 18),
-            AiFadeSlideIn(
+            const SizedBox(height: 18),
+            const AiFadeSlideIn(
               delayMs: 340,
               child: _PolicyFooterCard(
                 title: 'Your Choices',
@@ -67,10 +69,33 @@ class PrivacyPolicyScreen extends StatelessWidget {
                     'Smart Tracking is optional. You can use manual input instead, review your settings later, and decide how much information the app can access on this device.',
               ),
             ),
+            const SizedBox(height: 18),
+            AiFadeSlideIn(
+              delayMs: 420,
+              child: _HostedPolicyCard(
+                onOpen: () => _openHostedPolicy(context),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _openHostedPolicy(BuildContext context) async {
+    final uri = Uri.parse(AppLinks.privacyPolicyUrl);
+    final opened = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('We could not open the hosted privacy policy right now.'),
+        ),
+      );
+    }
   }
 }
 
@@ -201,6 +226,43 @@ class _PolicyFooterCard extends StatelessWidget {
               height: 1.45,
               fontWeight: FontWeight.w600,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HostedPolicyCard extends StatelessWidget {
+  const _HostedPolicyCard({required this.onOpen});
+
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    return AiGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AiSectionTitle(
+            icon: Icons.public_rounded,
+            title: 'Hosted Version',
+            color: AiModulePalette.blue,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'You can also open the official web copy of this policy if you need to share or review it outside the app.',
+            style: TextStyle(
+              color: AiModulePalette.textSecondary(context),
+              fontSize: 14,
+              height: 1.45,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 16),
+          AiSecondaryButton(
+            label: 'Open Hosted Privacy Policy',
+            onPressed: onOpen,
           ),
         ],
       ),

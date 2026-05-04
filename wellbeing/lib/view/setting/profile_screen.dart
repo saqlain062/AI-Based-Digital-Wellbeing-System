@@ -50,19 +50,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            AiFadeSlideIn(
-              child: _buildHeroCard(context),
-            ),
+            AiFadeSlideIn(child: _buildHeroCard(context)),
             const SizedBox(height: 18),
             AiFadeSlideIn(
               delayMs: 100,
               child: _buildPersonalDetailsCard(context),
             ),
             const SizedBox(height: 18),
-            AiFadeSlideIn(
-              delayMs: 180,
-              child: _buildCheckInCard(context),
-            ),
+            AiFadeSlideIn(delayMs: 180, child: _buildCheckInCard(context)),
             const SizedBox(height: 18),
             AiFadeSlideIn(
               delayMs: 260,
@@ -219,7 +214,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 16),
           _LabeledSlider(
-            label: 'Work or Study Hours',
+            label: 'Work Hours',
             valueLabel: '${workStudyHours.toStringAsFixed(1)} h',
             value: workStudyHours,
             min: 0,
@@ -365,10 +360,7 @@ class _GenderChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
           gradient: selected
               ? const LinearGradient(
-                  colors: [
-                    AiModulePalette.blue,
-                    AiModulePalette.purple,
-                  ],
+                  colors: [AiModulePalette.blue, AiModulePalette.purple],
                 )
               : null,
           color: selected
@@ -383,7 +375,9 @@ class _GenderChip extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.white : AiModulePalette.textPrimary(context),
+            color: selected
+                ? Colors.white
+                : AiModulePalette.textPrimary(context),
             fontSize: 13,
             fontWeight: FontWeight.w700,
           ),

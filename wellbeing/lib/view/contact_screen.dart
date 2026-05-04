@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../util/constants/app_links.dart';
 import 'dashboard/ai_module_widgets.dart';
 import 'setting/feedback_screen.dart';
 import 'setting/privacy_policy_screen.dart';
@@ -136,6 +138,13 @@ class ContactScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _SupportLinkTile(
+            icon: Icons.public_rounded,
+            title: 'Open Hosted Policy',
+            subtitle: 'View the web version at ai-wellbeing.web.app',
+            onTap: () => _openHostedPolicy(context),
+          ),
+          const SizedBox(height: 12),
+          _SupportLinkTile(
             icon: Icons.description_outlined,
             title: 'Terms of Service',
             subtitle: 'Review the app terms and usage notes',
@@ -174,6 +183,21 @@ class ContactScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _openHostedPolicy(BuildContext context) async {
+    final opened = await launchUrl(
+      Uri.parse(AppLinks.privacyPolicyUrl),
+      mode: LaunchMode.externalApplication,
+    );
+
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('We could not open the hosted policy right now.'),
+        ),
+      );
+    }
   }
 }
 
