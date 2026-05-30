@@ -56,7 +56,7 @@ class RecommendationEngine {
     if (riskScore > 0.7) {
       return _fallbackResult('high');
     }
-    if (riskScore > 0.3 && (features['stress_level'] ?? 0) >= 7) {
+    if (riskScore > 0.3 && (features['stress_level'] ?? 0) >= 2) {
       return _fallbackResult('moderate_stress');
     }
     if (riskScore > 0.3) {

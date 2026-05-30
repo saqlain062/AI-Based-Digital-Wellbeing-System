@@ -12,7 +12,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
     return AiModuleScaffold(
       title: 'Privacy Policy',
       subtitle:
-          'A simple explanation of how Wellbeing AI handles your data, permissions, and local storage.',
+          'A clear explanation of how Wellbeing AI handles your data, optional permissions, and local storage.',
       showBack: true,
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -31,6 +31,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   'Your screen time and app usage data',
                   'Your manual assessments and wellbeing inputs',
                   'Your saved results, reports, and app preferences',
+                  'Your local trend history unless you choose to clear it',
                 ],
               ),
             ),
@@ -44,6 +45,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   'To generate your AI-based wellbeing insights',
                   'To show app activity, reports, and usage patterns',
                   'To keep your experience personalized across visits',
+                  'To estimate digital balance signals from the data available on this phone',
                 ],
               ),
             ),
@@ -57,21 +59,62 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   'We do not require an account',
                   'We do not sell your personal data',
                   'We do not upload your private usage history to a cloud service as part of the core experience',
+                  'We do not read messages, photos, passwords, or typed content',
                 ],
               ),
             ),
             const SizedBox(height: 18),
             const AiFadeSlideIn(
               delayMs: 340,
+              child: _PolicySectionCard(
+                title: 'Android Usage Access',
+                icon: Icons.admin_panel_settings_rounded,
+                lines: [
+                  'Smart Tracking uses Android Usage Access only when you choose to enable it',
+                  'This helps estimate app usage time, app opens, and digital habit patterns',
+                  'Manual Input works without granting Usage Access',
+                  'You can turn Usage Access off again from Android Settings',
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            const AiFadeSlideIn(
+              delayMs: 420,
+              child: _PolicySectionCard(
+                title: 'Wellbeing Disclaimer',
+                icon: Icons.health_and_safety_outlined,
+                lines: [
+                  'Wellbeing AI is not a medical, mental health, or diagnostic tool',
+                  'Insights are estimates based on available usage and self-reported inputs',
+                  'For serious wellbeing concerns, speak with a qualified professional',
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            const AiFadeSlideIn(
+              delayMs: 500,
+              child: _PolicySectionCard(
+                title: 'Delete Your Local Data',
+                icon: Icons.delete_outline_rounded,
+                lines: [
+                  'Open Settings, then Data Management, to clear saved insights and trend history',
+                  'Reset Local Insights removes saved results, profile inputs, feature values, and local history',
+                  'Clearing local data does not require an account request because the core app data is stored on this device',
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            const AiFadeSlideIn(
+              delayMs: 580,
               child: _PolicyFooterCard(
                 title: 'Your Choices',
                 text:
-                    'Smart Tracking is optional. You can use manual input instead, review your settings later, and decide how much information the app can access on this device.',
+                    'Smart Tracking is optional. You can use Manual Input instead, review your settings later, clear saved local insights, and decide how much information the app can access on this device.',
               ),
             ),
             const SizedBox(height: 18),
             AiFadeSlideIn(
-              delayMs: 420,
+              delayMs: 660,
               child: _HostedPolicyCard(
                 onOpen: () => _openHostedPolicy(context),
               ),
@@ -124,7 +167,7 @@ class _PrivacyHeroCard extends StatelessWidget {
           ),
           SizedBox(height: 14),
           Text(
-            'Wellbeing AI is designed to keep your information close to you. The app uses local data on your device to create insights without asking you to create an account.',
+            'Wellbeing AI is designed to keep your information close to you. The core experience uses local data on your device to create digital balance insights without asking you to create an account.',
             style: TextStyle(
               color: Colors.white,
               fontSize: 15,
@@ -251,7 +294,7 @@ class _HostedPolicyCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'You can also open the official web copy of this policy if you need to share or review it outside the app.',
+            'You can also open the official hosted copy of this same policy if you need to share or review it outside the app.',
             style: TextStyle(
               color: AiModulePalette.textSecondary(context),
               fontSize: 14,

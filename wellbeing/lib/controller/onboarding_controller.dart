@@ -8,7 +8,7 @@ class OnboardingController extends GetxController {
 
   // ===== USER INPUTS =====
   var age = 20.0.obs;
-  var gender = 1.obs; // 0 = Female, 1 = Male
+  var gender = 1.obs; // 0 = Female, 1 = Male, 2 = Other
 
   var bedTime = const TimeOfDay(hour: 22, minute: 30).obs;
   var wakeTime = const TimeOfDay(hour: 7, minute: 0).obs;
@@ -17,19 +17,14 @@ class OnboardingController extends GetxController {
   var showSleepIndicator = true.obs;
   var workHours = 4.0.obs;
 
-  var selectedMood = 2.obs;
-  final moodEmojis = ['😌', '🙂', '😐', '😟', '😰'];
-  final moodLabels = [
-    'Very calm',
-    'Relaxed',
-    'Neutral',
-    'Stressed',
-    'Very stressed',
-  ];
-  final moodValues = [1.0, 2.5, 5.0, 7.5, 10.0];
+  var selectedMood = 1.obs;
+  final moodEmojis = ['L', 'M', 'H'];
+  final moodLabels = ['Low', 'Medium', 'High'];
+  final moodValues = [0.0, 1.0, 2.0];
 
-  var stressLevel = 5.0.obs;
-  var academicImpact = 5.0.obs;
+  var stressLevel = 1.0.obs;
+  var academicImpact = 0.0.obs;
+  var wellbeingGoal = 'build_balance'.obs;
 
   var showManualInputs = false.obs;
 
@@ -60,11 +55,19 @@ class OnboardingController extends GetxController {
       gender.value = (profile['gender'] ?? 1.0).toInt();
       sleepHours.value = inputs['sleep_hours'] ?? 7.0;
       workHours.value = inputs['work_study_hours'] ?? 4.0;
-      stressLevel.value = inputs['stress_level'] ?? 5.0;
-      academicImpact.value = inputs['academic_impact'] ?? 5.0;
+      stressLevel.value = normalizeStressValue(inputs['stress_level'] ?? 1.0);
+      academicImpact.value = normalizeAcademicImpactValue(
+        inputs['academic_impact'] ?? 0.0,
+      );
+      selectedMood.value = stressLevel.value.round().clamp(0, 2).toInt();
+      wellbeingGoal.value = HiveService.instance.getWellbeingGoal();
     } catch (e) {
       // Use defaults if loading fails
     }
+  }
+
+  void selectWellbeingGoal(String value) {
+    wellbeingGoal.value = value;
   }
 
   void toggleSleepWindow(bool enabled) {
@@ -97,9 +100,20 @@ class OnboardingController extends GetxController {
     stressLevel.value = moodValues[index];
   }
 
+  static double normalizeStressValue(double value) {
+    if (value >= 7) return 2.0;
+    if (value >= 3) return 1.0;
+    return value.round().clamp(0, 2).toDouble();
+  }
+
+  static double normalizeAcademicImpactValue(double value) {
+    if (value > 1) return 1.0;
+    return value.round().clamp(0, 1).toDouble();
+  }
+
   // ===== NAVIGATION =====
   void next() {
-    if (currentStep.value < 3) currentStep.value++;
+    if (currentStep.value < 4) currentStep.value++;
   }
 
   void back() {
@@ -118,7 +132,8 @@ class OnboardingController extends GetxController {
       stressLevel: stressLevel.value,
       academicImpact: academicImpact.value,
     );
+    HiveService.instance.saveWellbeingGoal(wellbeingGoal.value);
   }
 
-  double get progress => (currentStep.value + 1) / 4;
+  double get progress => (currentStep.value + 1) / 5;
 }

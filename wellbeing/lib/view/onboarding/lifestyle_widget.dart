@@ -138,7 +138,7 @@ class LifestyleWidget extends StatelessWidget {
               children: [
                 const OnboardingSectionLabel(
                   icon: Icons.school_rounded,
-                  title: 'Work hours',
+                  title: 'Work/Study Hours',
                 ),
                 const SizedBox(height: 10),
                 Text(

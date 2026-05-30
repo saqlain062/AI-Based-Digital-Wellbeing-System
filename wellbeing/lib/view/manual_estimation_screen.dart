@@ -1,12 +1,13 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:wellbeing/util/theme/wellbeing_theme.dart';
 
 import '../controller/ai_controller.dart';
 import '../controller/onboarding_controller.dart';
 import '../navigation_menu.dart';
 import '../services/hive_service.dart';
-import 'onboarding/basic_info_widget.dart';
+import '../util/theme/wellbeing_theme.dart';
 
 class ManualEstimationScreen extends StatelessWidget {
   const ManualEstimationScreen({super.key});
@@ -17,156 +18,230 @@ class ManualEstimationScreen extends StatelessWidget {
     final ai = Get.find<AIController>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Manual Input')),
+      backgroundColor: WellbeingDecor.background(context),
+      appBar: AppBar(title: const Text('Manual Check-in')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Add your best estimate',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Use a rough estimate if smart tracking is not enabled yet. You can always turn it on later for more detailed insights.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 24),
-            _SectionHeader(
-              title: 'Device Usage',
-              icon: Icons.phone_android_rounded,
-            ),
-            const SizedBox(height: 14),
-            _SliderCard(
-              title: 'Daily Screen Time',
-              subtitle: 'Total hours spent on your device',
-              icon: Icons.fit_screen_outlined,
-              value: c.manualScreenTime,
-              min: 0,
-              max: 12,
-              unit: 'hours',
-            ),
-            const SizedBox(height: 12),
-            _SliderCard(
-              title: 'Weekend Screen Time',
-              subtitle: 'How much higher weekends tend to feel',
-              icon: Icons.weekend_rounded,
-              value: c.weekendScreen,
-              min: 0,
-              max: 12,
-              unit: 'hours',
-            ),
-            const SizedBox(height: 20),
-            _SectionHeader(
-              title: 'App & Content Usage',
-              icon: Icons.grid_view_rounded,
-            ),
-            const SizedBox(height: 14),
-            _SliderCard(
-              title: 'Social Media Hours',
-              subtitle: 'Time spent on social apps',
-              icon: Icons.people_alt_rounded,
-              value: c.manualSocial,
-              min: 0,
-              max: 10,
-              unit: 'hours',
-            ),
-            const SizedBox(height: 12),
-            _SliderCard(
-              title: 'Gaming Hours',
-              subtitle: 'Average time spent gaming',
-              icon: Icons.sports_esports_rounded,
-              value: c.manualGaming,
-              min: 0,
-              max: 10,
-              unit: 'hours',
-            ),
-            const SizedBox(height: 20),
-            _SectionHeader(
-              title: 'Interactions',
-              icon: Icons.touch_app_rounded,
-            ),
-            const SizedBox(height: 14),
-            _SliderCard(
-              title: 'App Opens',
-              subtitle: 'How often you open apps each day',
-              icon: Icons.touch_app_rounded,
-              value: c.appOpens,
-              min: 0,
-              max: 200,
-              unit: 'opens',
-            ),
-            const SizedBox(height: 12),
-            _SliderCard(
-              title: 'Notifications',
-              subtitle: 'Notifications received per day',
-              icon: Icons.notifications_active_rounded,
-              value: c.notifications,
-              min: 0,
-              max: 200,
-              unit: 'notifications',
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      c.showManualInputs.value = false;
-                      Get.back();
-                    },
-                    child: const Text('Go Back'),
-                  ),
+        child: Obx(
+          () => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Estimate today\'s phone habits',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Use a rough estimate if Smart Tracking is not enabled yet. You can switch to Smart Tracking later from Settings.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
+              ),
+              const SizedBox(height: 24),
+              const _SectionHeader(
+                title: 'Phone use',
+                icon: Icons.phone_android_rounded,
+              ),
+              const SizedBox(height: 14),
+              _SliderCard(
+                title: 'Daily screen time',
+                subtitle: 'Total hours spent on your phone today',
+                icon: Icons.fit_screen_outlined,
+                value: c.manualScreenTime,
+                min: 0,
+                max: 12,
+                unit: 'hours',
+              ),
+              const SizedBox(height: 12),
+              _SliderCard(
+                title: 'Social media time',
+                subtitle: 'Time spent on social apps',
+                icon: Icons.people_alt_rounded,
+                value: c.manualSocial,
+                min: 0,
+                max: 8,
+                unit: 'hours',
+              ),
+              const SizedBox(height: 12),
+              _SliderCard(
+                title: 'Gaming time',
+                subtitle: 'Time spent gaming or in entertainment apps',
+                icon: Icons.sports_esports_rounded,
+                value: c.manualGaming,
+                min: 0,
+                max: 8,
+                unit: 'hours',
+              ),
+              const SizedBox(height: 20),
+              const _SectionHeader(
+                title: 'Daily routine',
+                icon: Icons.schedule_rounded,
+              ),
+              const SizedBox(height: 14),
+              _SliderCard(
+                title: 'Sleep hours',
+                subtitle: 'How much sleep you expect to get',
+                icon: Icons.bedtime_rounded,
+                value: c.sleepHours,
+                min: 3,
+                max: 10,
+                unit: 'hours',
+              ),
+              const SizedBox(height: 12),
+              _SliderCard(
+                title: 'Work or study hours',
+                subtitle: 'Focused work, class, or study time',
+                icon: Icons.school_outlined,
+                value: c.workHours,
+                min: 0,
+                max: 12,
+                unit: 'hours',
+              ),
+              const SizedBox(height: 20),
+              const _SectionHeader(
+                title: 'How you feel',
+                icon: Icons.self_improvement_rounded,
+              ),
+              const SizedBox(height: 14),
+              _ChoiceCard(
+                title: 'Stress level',
+                subtitle: 'Choose the option that feels closest today',
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: List.generate(c.moodLabels.length, (index) {
+                    return ChoiceChip(
+                      label: Text(c.moodLabels[index]),
+                      selected: c.selectedMood.value == index,
+                      onSelected: (_) => c.selectMood(index),
+                    );
+                  }),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: WellbeingTheme.primaryGradient,
-                      borderRadius: WellbeingTheme.buttonRadius,
-                      boxShadow: WellbeingTheme.softShadow,
+              ),
+              const SizedBox(height: 12),
+              _ChoiceCard(
+                title: 'Impact on work or study',
+                subtitle: 'Has your phone been affecting your routine today?',
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    ChoiceChip(
+                      label: const Text('Not much'),
+                      selected: c.academicImpact.value == 0,
+                      onSelected: (_) => c.academicImpact.value = 0,
                     ),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        _setCommonFeatures(c, ai);
-                        c.saveProfile();
-
-                        ai.setFeature('daily_screen_time', c.manualScreenTime.value);
-                        ai.setFeature('social_media_hours', c.manualSocial.value);
-                        ai.setFeature('gaming_hours', c.manualGaming.value);
-                        ai.setFeature('notifications', c.notifications.value);
-                        ai.setFeature('app_opens', c.appOpens.value);
-                        ai.setFeature('weekend_screen', c.weekendScreen.value);
-                        ai.setCameFromManualEstimation();
-
-                        await ai.runInference();
-                        HiveService.instance.saveBool('onboardingCompleted', true);
-                        Get.offAll(() => const NavigationMenu(initialIndex: 0));
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
+                    ChoiceChip(
+                      label: const Text('Noticeable'),
+                      selected: c.academicImpact.value == 1,
+                      onSelected: (_) => c.academicImpact.value = 1,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              const _SectionHeader(
+                title: 'Profile',
+                icon: Icons.person_outline_rounded,
+              ),
+              const SizedBox(height: 14),
+              _SliderCard(
+                title: 'Age',
+                subtitle: 'Use your current age',
+                icon: Icons.cake_outlined,
+                value: c.age,
+                min: 16,
+                max: 60,
+                unit: 'years',
+              ),
+              const SizedBox(height: 12),
+              _ChoiceCard(
+                title: 'Gender',
+                subtitle: 'Select the option you prefer to use',
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    ChoiceChip(
+                      label: const Text('Female'),
+                      selected: c.gender.value == 0,
+                      onSelected: (_) => c.gender.value = 0,
+                    ),
+                    ChoiceChip(
+                      label: const Text('Male'),
+                      selected: c.gender.value == 1,
+                      onSelected: (_) => c.gender.value = 1,
+                    ),
+                    ChoiceChip(
+                      label: const Text('Prefer not to say'),
+                      selected: c.gender.value == 2,
+                      onSelected: (_) => c.gender.value = 2,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(),
+                      child: const Text('Go Back'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: WellbeingTheme.primaryGradient,
+                        borderRadius: WellbeingTheme.buttonRadius,
+                        boxShadow: WellbeingTheme.softShadow,
                       ),
-                      child: const Text('See My Result'),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          _setManualFeatures(c, ai);
+                          c.saveProfile();
+                          ai.setCameFromManualEstimation();
+
+                          await ai.runInference();
+                          HiveService.instance.saveBool('onboardingCompleted', true);
+                          Get.offAll(() => const NavigationMenu(initialIndex: 0));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                        ),
+                        child: const Text('Analyse my digital balance'),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _setCommonFeatures(OnboardingController c, AIController ai) {
+  void _setManualFeatures(OnboardingController c, AIController ai) {
+    final dailyScreen = c.manualScreenTime.value;
+    final social = c.manualSocial.value;
+    final gaming = c.manualGaming.value;
+    final estimatedNotifications = (social * 14) + (dailyScreen * 6);
+    final estimatedAppOpens = (dailyScreen * 8) + (social * 6) + (gaming * 4);
+    final weekendScreen = math.max(dailyScreen, dailyScreen * 1.15);
+
     ai.setFeature('age', c.age.value);
     ai.setFeature('gender', c.gender.value.toDouble());
     ai.setFeature('sleep_hours', c.sleepHours.value);
     ai.setFeature('work_study_hours', c.workHours.value);
     ai.setFeature('stress_level', c.stressLevel.value);
     ai.setFeature('academic_impact', c.academicImpact.value);
+    ai.setFeature('daily_screen_time', dailyScreen);
+    ai.setFeature('social_media_hours', social);
+    ai.setFeature('gaming_hours', gaming);
+    ai.setFeature('notifications', estimatedNotifications);
+    ai.setFeature('app_opens', estimatedAppOpens);
+    ai.setFeature('weekend_screen', weekendScreen);
   }
 }
 
@@ -225,7 +300,14 @@ class _SliderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OnboardingCard(
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: WellbeingDecor.surface(context),
+        borderRadius: WellbeingTheme.cardRadius,
+        border: Border.all(color: Theme.of(context).dividerColor),
+        boxShadow: WellbeingTheme.softShadow,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -253,24 +335,20 @@ class _SliderCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          Obx(
-            () => Text(
-              '${value.value.toStringAsFixed(value.value % 1 == 0 ? 0 : 1)} $unit',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: WellbeingTheme.indigo,
-              ),
+          Text(
+            '${value.value.toStringAsFixed(value.value % 1 == 0 ? 0 : 1)} $unit',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: WellbeingTheme.indigo,
             ),
           ),
           const SizedBox(height: 8),
-          Obx(
-            () => Slider(
-              value: value.value,
-              min: min,
-              max: max,
-              divisions: ((max - min) / 0.5).toInt(),
-              label: value.value.toStringAsFixed(1),
-              onChanged: (v) => value.value = v,
-            ),
+          Slider(
+            value: value.value,
+            min: min,
+            max: max,
+            divisions: ((max - min) / 0.5).round(),
+            label: value.value.toStringAsFixed(value.value % 1 == 0 ? 0 : 1),
+            onChanged: (v) => value.value = v,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -279,6 +357,42 @@ class _SliderCard extends StatelessWidget {
               Text(max.toStringAsFixed(0), style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChoiceCard extends StatelessWidget {
+  const _ChoiceCard({
+    required this.title,
+    required this.subtitle,
+    required this.child,
+  });
+
+  final String title;
+  final String subtitle;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: WellbeingDecor.surface(context),
+        borderRadius: WellbeingTheme.cardRadius,
+        border: Border.all(color: Theme.of(context).dividerColor),
+        boxShadow: WellbeingTheme.softShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 14),
+          child,
         ],
       ),
     );

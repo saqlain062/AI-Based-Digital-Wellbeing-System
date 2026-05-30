@@ -47,6 +47,7 @@ class BehaviorWidget extends StatelessWidget {
                     runSpacing: 10,
                     children: List.generate(c.moodLabels.length, (index) {
                       final selected = c.selectedMood.value == index;
+                      final isDark = WellbeingDecor.isDark(context);
                       return ChoiceChip(
                         label: Text(c.moodLabels[index]),
                         avatar: Text(
@@ -55,9 +56,18 @@ class BehaviorWidget extends StatelessWidget {
                         ),
                         selected: selected,
                         onSelected: (_) => c.selectMood(index),
-                        selectedColor: const Color(0xFFEDE9FE),
+                        showCheckmark: false,
+                        selectedColor: isDark
+                            ? const Color(0xFF312E81)
+                            : const Color(0xFFEDE9FE),
                         backgroundColor: WellbeingDecor.tintedSurface(context),
                         side: BorderSide(color: Theme.of(context).dividerColor),
+                        labelStyle: TextStyle(
+                          color: selected && isDark
+                              ? Colors.white
+                              : WellbeingDecor.textPrimary(context),
+                          fontWeight: FontWeight.w700,
+                        ),
                       );
                     }),
                   ),
@@ -76,37 +86,54 @@ class BehaviorWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'How much does phone use affect your studies or ability to focus?',
+                  'Does phone use affect your studies, work, or ability to focus?',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 14),
                 Obx(
-                  () => RichText(
-                    text: TextSpan(
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: WellbeingDecor.textSecondary(context),
-                      ),
-                      children: [
-                        TextSpan(
-                          text: c.academicImpact.value.toStringAsFixed(0),
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: WellbeingTheme.purple,
-                          ),
+                  () => Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      ChoiceChip(
+                        label: const Text('No'),
+                        selected: c.academicImpact.value == 0.0,
+                        onSelected: (_) => c.academicImpact.value = 0.0,
+                        showCheckmark: false,
+                        selectedColor: WellbeingDecor.isDark(context)
+                            ? const Color(0xFF312E81)
+                            : const Color(0xFFEDE9FE),
+                        backgroundColor: WellbeingDecor.tintedSurface(context),
+                        side: BorderSide(color: Theme.of(context).dividerColor),
+                        labelStyle: TextStyle(
+                          color:
+                              c.academicImpact.value == 0.0 &&
+                                  WellbeingDecor.isDark(context)
+                              ? Colors.white
+                              : WellbeingDecor.textPrimary(context),
+                          fontWeight: FontWeight.w700,
                         ),
-                        const TextSpan(text: ' / 10'),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Obx(
-                  () => Slider(
-                    value: c.academicImpact.value,
-                    min: 1,
-                    max: 10,
-                    divisions: 9,
-                    label: c.academicImpact.value.toStringAsFixed(0),
-                    onChanged: (v) => c.academicImpact.value = v,
+                      ),
+                      ChoiceChip(
+                        label: const Text('Yes'),
+                        selected: c.academicImpact.value == 1.0,
+                        onSelected: (_) => c.academicImpact.value = 1.0,
+                        showCheckmark: false,
+                        selectedColor: WellbeingDecor.isDark(context)
+                            ? const Color(0xFF312E81)
+                            : const Color(0xFFEDE9FE),
+                        backgroundColor: WellbeingDecor.tintedSurface(context),
+                        side: BorderSide(color: Theme.of(context).dividerColor),
+                        labelStyle: TextStyle(
+                          color:
+                              c.academicImpact.value == 1.0 &&
+                                  WellbeingDecor.isDark(context)
+                              ? Colors.white
+                              : WellbeingDecor.textPrimary(context),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -135,7 +162,7 @@ class BehaviorWidget extends StatelessWidget {
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                     ),
-                    child: const Text('Finish Setup'),
+                    child: const Text('Next'),
                   ),
                 ),
               ),

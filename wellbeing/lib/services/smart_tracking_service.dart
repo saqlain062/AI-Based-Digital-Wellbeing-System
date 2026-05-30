@@ -1,20 +1,23 @@
-import 'dart:async';
 import 'dart:developer';
+import 'dart:ui';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../controller/ai_controller.dart';
-import '../services/hive_service.dart';
+import '../core/notifications/notification_scheduler.dart';
+import 'hive_service.dart';
 
 class SmartTrackingService {
   static const String _dailyAnalysisTask = 'dailyWellbeingAnalysis';
+  static final NotificationScheduler _notificationScheduler =
+      NotificationScheduler();
 
   static Future<void> initialize() async {
-    // Initialize WorkManager
     await Workmanager().initialize(callbackDispatcher);
 
-    // Schedule daily analysis if smart tracking is enabled
     if (HiveService.instance.getBool(
       'smartTrackingEnabled',
       defaultValue: false,
@@ -24,11 +27,8 @@ class SmartTrackingService {
   }
 
   static Future<void> scheduleDailyAnalysis() async {
-    final hour =
-        (HiveService.instance.getUser('smartTrackingHour') ?? 8) as int;
-    final frequency =
-        (HiveService.instance.getUser('smartTrackingFrequency') ?? 'daily')
-            as String;
+    final hour = _getTrackingHour();
+    final frequency = _getTrackingFrequency();
 
     if (frequency == 'daily') {
       await Workmanager().registerPeriodicTask(
@@ -46,7 +46,7 @@ class SmartTrackingService {
       );
 
       if (kDebugMode) {
-        log('📅 Scheduled daily analysis at $hour:00');
+        log('Scheduled daily analysis at $hour:00');
       }
     }
   }
@@ -57,32 +57,32 @@ class SmartTrackingService {
 
     if (now.isBefore(targetTime)) {
       return targetTime.difference(now);
-    } else {
-      // Schedule for tomorrow
-      return targetTime.add(const Duration(days: 1)).difference(now);
     }
+    return targetTime.add(const Duration(days: 1)).difference(now);
   }
 
   static Future<void> cancelDailyAnalysis() async {
     await Workmanager().cancelByUniqueName(_dailyAnalysisTask);
     if (kDebugMode) {
-      log('❌ Cancelled daily analysis');
+      log('Cancelled daily analysis');
     }
   }
 
   static Future<void> enableSmartTracking() async {
     HiveService.instance.saveBool('smartTrackingEnabled', true);
     await scheduleDailyAnalysis();
+    await _syncNotificationSchedule();
     if (kDebugMode) {
-      log('✅ Smart tracking enabled');
+      log('Smart tracking enabled');
     }
   }
 
   static Future<void> disableSmartTracking() async {
     HiveService.instance.saveBool('smartTrackingEnabled', false);
     await cancelDailyAnalysis();
+    await _notificationScheduler.cancelSmartTrackingReminder();
     if (kDebugMode) {
-      log('❌ Smart tracking disabled');
+      log('Smart tracking disabled');
     }
   }
 
@@ -110,9 +110,11 @@ class SmartTrackingService {
       await scheduleDailyAnalysis();
     }
 
+    await _syncNotificationSchedule();
+
     if (kDebugMode) {
       log(
-        '⚙️ Updated smart tracking settings: hour=$hour, frequency=$frequency, notifications=$notificationsEnabled',
+        'Updated smart tracking settings: hour=$hour, frequency=$frequency, notifications=$notificationsEnabled',
       );
     }
   }
@@ -120,27 +122,45 @@ class SmartTrackingService {
   static Future<void> performAnalysis() async {
     try {
       if (kDebugMode) {
-        log('🔄 Starting daily wellbeing analysis...');
+        log('Starting daily wellbeing analysis...');
       }
 
-      final aiController = Get.find<AIController>();
+      WidgetsFlutterBinding.ensureInitialized();
+      DartPluginRegistrant.ensureInitialized();
+      await HiveService.instance.init();
 
-      // Load fresh usage data
+      final aiController = Get.isRegistered<AIController>()
+          ? Get.find<AIController>()
+          : Get.put(AIController(), permanent: true);
+
+      await aiController.ensureReady();
+      aiController.setCameFromSmartTracking();
       await aiController.loadUsage();
-
-      // Run inference with new data
-      await aiController.runInference();
+      await aiController.runInference(showLoading: false);
 
       if (kDebugMode) {
         log(
-          '✅ Daily analysis completed: Score ${aiController.riskScore.value.toStringAsFixed(1)}%',
+          'Daily analysis completed: balance score ${aiController.riskScore.value.toStringAsFixed(2)}',
         );
       }
-    } catch (e) {
+    } catch (error) {
       if (kDebugMode) {
-        log('❌ Daily analysis failed: $e');
+        log('Daily analysis failed: $error');
       }
     }
+  }
+
+  static Future<void> _syncNotificationSchedule() async {
+    final notificationsEnabled = _getNotificationsEnabled();
+    if (!isSmartTrackingEnabled() || !notificationsEnabled) {
+      await _notificationScheduler.cancelSmartTrackingReminder();
+      return;
+    }
+
+    await _notificationScheduler.scheduleSmartTrackingReminder(
+      hour: _getTrackingHour(),
+      frequency: _getTrackingFrequency(),
+    );
   }
 
   static bool _getNotificationsEnabled() {
@@ -160,7 +180,6 @@ class SmartTrackingService {
   }
 }
 
-// WorkManager callback dispatcher
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {

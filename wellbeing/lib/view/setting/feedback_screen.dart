@@ -23,7 +23,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   final Set<String> selectedTopics = <String>{};
 
   static const List<String> topics = [
-    'Prediction clarity',
+    'Insight clarity',
     'Tracking accuracy',
     'Recommendations',
     'Design',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../controller/ai_controller.dart';
+import '../../controller/onboarding_controller.dart';
 import '../../services/hive_service.dart';
 import '../../navigation_menu.dart';
 import '../dashboard/ai_module_widgets.dart';
@@ -33,8 +34,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     gender = profile['gender'] ?? 2.0;
     sleepHours = onboardingInputs['sleep_hours'] ?? 7.0;
     workStudyHours = onboardingInputs['work_study_hours'] ?? 4.0;
-    stressLevel = onboardingInputs['stress_level'] ?? 5.0;
-    academicImpact = onboardingInputs['academic_impact'] ?? 5.0;
+    stressLevel = OnboardingController.normalizeStressValue(
+      onboardingInputs['stress_level'] ?? 1.0,
+    );
+    academicImpact = OnboardingController.normalizeAcademicImpactValue(
+      onboardingInputs['academic_impact'] ?? 0.0,
+    );
   }
 
   @override
@@ -66,7 +71,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Sleep, work or study time, stress, and academic impact often change over time. If you update them here, the app can recalculate your result using your latest device data and personal inputs.',
+                      'Sleep, work or study time, stress, and work/study impact often change over time. If you update them here, the app can recalculate your result using your latest device data and personal inputs.',
                       style: TextStyle(
                         color: AiModulePalette.textSecondary(context),
                         fontSize: 14,
@@ -214,7 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 16),
           _LabeledSlider(
-            label: 'Work Hours',
+            label: 'Work/Study Hours',
             valueLabel: '${workStudyHours.toStringAsFixed(1)} h',
             value: workStudyHours,
             min: 0,
@@ -223,23 +228,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onChanged: (value) => setState(() => workStudyHours = value),
           ),
           const SizedBox(height: 16),
-          _LabeledSlider(
+          _ChoiceGroup(
             label: 'Stress Level',
-            valueLabel: '${stressLevel.toStringAsFixed(0)}/10',
-            value: stressLevel,
-            min: 0,
-            max: 10,
-            divisions: 10,
+            valueLabel: _formatStress(stressLevel),
+            options: const [
+              _ChoiceOption(label: 'Low', value: 0.0),
+              _ChoiceOption(label: 'Medium', value: 1.0),
+              _ChoiceOption(label: 'High', value: 2.0),
+            ],
+            selectedValue: stressLevel,
             onChanged: (value) => setState(() => stressLevel = value),
           ),
           const SizedBox(height: 16),
-          _LabeledSlider(
-            label: 'Academic Impact',
-            valueLabel: '${academicImpact.toStringAsFixed(0)}/10',
-            value: academicImpact,
-            min: 0,
-            max: 10,
-            divisions: 10,
+          _ChoiceGroup(
+            label: 'Work/Study Impact',
+            valueLabel: _formatAcademicImpact(academicImpact),
+            options: const [
+              _ChoiceOption(label: 'No', value: 0.0),
+              _ChoiceOption(label: 'Yes', value: 1.0),
+            ],
+            selectedValue: academicImpact,
             onChanged: (value) => setState(() => academicImpact = value),
           ),
         ],
@@ -275,6 +283,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (value == 1.0) return 'Male';
     return 'Other';
   }
+
+  String _formatStress(double value) {
+    if (value >= 2.0) return 'High';
+    if (value >= 1.0) return 'Medium';
+    return 'Low';
+  }
+
+  String _formatAcademicImpact(double value) {
+    return value >= 1.0 ? 'Yes' : 'No';
+  }
+}
+
+class _ChoiceGroup extends StatelessWidget {
+  const _ChoiceGroup({
+    required this.label,
+    required this.valueLabel,
+    required this.options,
+    required this.selectedValue,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String valueLabel;
+  final List<_ChoiceOption> options;
+  final double selectedValue;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: AiModulePalette.textPrimary(context),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              valueLabel,
+              style: TextStyle(
+                color: AiModulePalette.textSecondary(context),
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: options
+              .map(
+                (option) => _GenderChip(
+                  label: option.label,
+                  selected: selectedValue == option.value,
+                  onTap: () => onChanged(option.value),
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+}
+
+class _ChoiceOption {
+  const _ChoiceOption({required this.label, required this.value});
+
+  final String label;
+  final double value;
 }
 
 class _LabeledSlider extends StatelessWidget {

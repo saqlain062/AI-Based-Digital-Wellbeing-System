@@ -47,8 +47,10 @@ class AiModulePalette {
   static Color riskColor(String category) {
     switch (category) {
       case 'High':
+      case 'Needs attention':
         return danger;
       case 'Moderate':
+      case 'Watchful':
         return warning;
       default:
         return success;
@@ -391,7 +393,7 @@ class AiAnimatedProgressRing extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Risk score',
+                    'Balance score',
                     style: TextStyle(
                       color: labelColor,
                       fontSize: 11,

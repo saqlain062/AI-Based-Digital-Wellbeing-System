@@ -13,9 +13,18 @@ import 'ai_module_widgets.dart';
 import 'usage_report_screen.dart';
 
 class AIAnalysisScreen extends StatefulWidget {
-  const AIAnalysisScreen({super.key, this.initialTopApps});
+  const AIAnalysisScreen({
+    super.key,
+    this.initialTopApps,
+    this.showBack = true,
+    this.title,
+    this.subtitle,
+  });
 
   final List<Map<String, dynamic>>? initialTopApps;
+  final bool showBack;
+  final String? title;
+  final String? subtitle;
 
   @override
   State<AIAnalysisScreen> createState() => _AIAnalysisScreenState();
@@ -44,10 +53,11 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
   @override
   Widget build(BuildContext context) {
     return AiModuleScaffold(
-      title: 'Detailed AI Analysis',
+      title: widget.title ?? 'Detailed Insights',
       subtitle:
-          'A closer look at what influenced your result, using only the information currently available on your device.',
-      showBack: true,
+          widget.subtitle ??
+          'A closer look at what influenced today’s phone habit result, using only the information currently available on your device.',
+      showBack: widget.showBack,
       child: Obx(() {
         final riskColor = AiModulePalette.riskColor(controller.riskCategory);
 
@@ -110,7 +120,7 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
         children: [
           const AiSectionTitle(
             icon: Icons.insights_rounded,
-            title: 'Prediction Summary',
+            title: 'Digital Balance Summary',
             color: AiModulePalette.blue,
           ),
           const SizedBox(height: 16),
@@ -119,12 +129,12 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
             runSpacing: 12,
             children: [
               AiMetricPill(
-                label: 'Current score',
+                label: 'Digital balance score',
                 value: '${(controller.riskScore.value * 100).round()}%',
               ),
               AiMetricPill(
-                label: 'Current level',
-                value: controller.riskCategory,
+                label: 'Balance state',
+                value: controller.balanceCategory,
               ),
               AiMetricPill(
                 label: 'Confidence',
@@ -134,7 +144,7 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
                 label: 'Analysis source',
                 value: controller.hasSmartTrackingData
                     ? 'Smart Tracking'
-                    : 'Manual Assessment',
+                    : 'Manual Check-in',
               ),
             ],
           ),
@@ -169,7 +179,7 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
         value: controller.sessionDurationMinutes > 0
             ? '${controller.sessionDurationMinutes} min'
             : 'Not available yet',
-        impact: controller.sessionDurationMinutes >= 8 ? 'Moderate' : 'Low',
+        impact: controller.sessionDurationMinutes >= 8 ? 'Moderate' : 'Lighter',
         trend: 'Stable',
         icon: Icons.timelapse_rounded,
       ),
@@ -187,7 +197,7 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
         value: controller.mostUsedCategory == 'Unavailable'
             ? 'Not available yet'
             : controller.mostUsedCategory,
-        impact: controller.mostUsedCategory == 'Social' ? 'High' : 'Low',
+        impact: controller.mostUsedCategory == 'Social' ? 'Higher' : 'Lighter',
         trend: 'Stable',
         icon: Icons.category_rounded,
       ),
@@ -197,7 +207,7 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
       _FactorTileData(
         label: 'Age',
         value: '${controller.featureValue('age').round()} yrs',
-        impact: 'Low',
+        impact: 'Lighter',
         trend: 'Stable',
         icon: Icons.cake_rounded,
       ),
@@ -210,25 +220,25 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
       ),
       _FactorTileData(
         label: 'Stress Level',
-        value:
-            '${controller.featureValue('stress_level').toStringAsFixed(1)}/10',
+        value: _formatStress(controller.featureValue('stress_level')),
         impact: _impactForStress(controller.featureValue('stress_level')),
         trend: 'Stable',
         icon: Icons.spa_rounded,
       ),
       _FactorTileData(
-        label: 'Work Hours',
+        label: 'Work/Study Hours',
         value:
             '${controller.featureValue('work_study_hours').toStringAsFixed(1)} h',
-        impact: 'Moderate',
+        impact: 'Context',
         trend: 'Stable',
         icon: Icons.school_rounded,
       ),
       _FactorTileData(
-        label: 'Academic Impact',
-        value:
-            '${controller.featureValue('academic_impact').toStringAsFixed(1)}/10',
-        impact: _impactForStress(controller.featureValue('academic_impact')),
+        label: 'Work/Study Impact',
+        value: _formatAcademicImpact(controller.featureValue('academic_impact')),
+        impact: _impactForAcademicImpact(
+          controller.featureValue('academic_impact'),
+        ),
         trend: 'Stable',
         icon: Icons.trending_up_rounded,
       ),
@@ -380,7 +390,7 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
       _FactorTileData(
         label: 'Age',
         value: '${controller.featureValue('age').round()} yrs',
-        impact: 'Low',
+        impact: 'Lighter',
         trend: 'Stable',
         icon: Icons.cake_rounded,
       ),
@@ -393,25 +403,25 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
       ),
       _FactorTileData(
         label: 'Stress Level',
-        value:
-            '${controller.featureValue('stress_level').toStringAsFixed(1)}/10',
+        value: _formatStress(controller.featureValue('stress_level')),
         impact: _impactForStress(controller.featureValue('stress_level')),
         trend: 'Stable',
         icon: Icons.spa_rounded,
       ),
       _FactorTileData(
-        label: 'Work Hours',
+        label: 'Work/Study Hours',
         value:
             '${controller.featureValue('work_study_hours').toStringAsFixed(1)} h',
-        impact: 'Moderate',
+        impact: 'Context',
         trend: 'Stable',
         icon: Icons.school_rounded,
       ),
       _FactorTileData(
-        label: 'Academic Impact',
-        value:
-            '${controller.featureValue('academic_impact').toStringAsFixed(1)}/10',
-        impact: _impactForStress(controller.featureValue('academic_impact')),
+        label: 'Work/Study Impact',
+        value: _formatAcademicImpact(controller.featureValue('academic_impact')),
+        impact: _impactForAcademicImpact(
+          controller.featureValue('academic_impact'),
+        ),
         trend: 'Stable',
         icon: Icons.trending_up_rounded,
       ),
@@ -531,27 +541,41 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
   }
 
   String _impactForUsage(double hours) {
-    if (hours >= 6) return 'High';
+    if (hours >= 6) return 'Higher';
     if (hours >= 4) return 'Moderate';
-    return 'Low';
+    return 'Lighter';
   }
 
   String _impactForSleep(double hours) {
-    if (hours < 6) return 'High';
+    if (hours < 6) return 'Higher';
     if (hours < 7) return 'Moderate';
-    return 'Low';
+    return 'Lighter';
   }
 
   String _impactForStress(double value) {
-    if (value >= 7) return 'High';
-    if (value >= 4) return 'Moderate';
+    if (value >= 2) return 'Higher';
+    if (value >= 1) return 'Moderate';
+    return 'Lighter';
+  }
+
+  String _impactForAcademicImpact(double value) {
+    return value >= 1 ? 'Disruptive' : 'Supportive';
+  }
+
+  String _formatStress(double value) {
+    if (value >= 2) return 'High';
+    if (value >= 1) return 'Medium';
     return 'Low';
   }
 
+  String _formatAcademicImpact(double value) {
+    return value >= 1 ? 'Yes' : 'No';
+  }
+
   String _impactForPickups(double value) {
-    if (value >= 80) return 'High';
+    if (value >= 80) return 'Higher';
     if (value >= 35) return 'Moderate';
-    return 'Low';
+    return 'Lighter';
   }
 }
 
@@ -579,12 +603,21 @@ class _FactorTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final impactColor = AiModulePalette.riskColor(
-      data.impact == 'High'
+      data.impact == 'Higher'
           ? 'High'
-          : data.impact == 'Moderate'
+          : data.impact == 'Moderate' || data.impact == 'Disruptive'
           ? 'Moderate'
           : 'Low',
     );
+    final badgeLabel = switch (data.impact) {
+      'Context' => 'Routine context',
+      'Supportive' => 'Not disrupting focus',
+      'Disruptive' => 'Affects focus',
+      'Higher' => 'Higher balance signal',
+      'Moderate' => 'Moderate balance signal',
+      'Lighter' => 'Lighter balance signal',
+      _ => '${data.impact} signal',
+    };
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -636,7 +669,7 @@ class _FactorTile extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              AiStatusBadge(label: '${data.impact} impact', color: impactColor),
+              AiStatusBadge(label: badgeLabel, color: impactColor),
               const SizedBox(height: 6),
               Text(
                 _trendLabel(data.trend),

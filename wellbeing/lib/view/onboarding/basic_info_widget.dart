@@ -196,22 +196,25 @@ class _GenderChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = WellbeingDecor.isDark(context);
+    final selectedTextColor = isDark ? Colors.white : WellbeingTheme.indigo;
+    final unselectedTextColor = WellbeingDecor.textPrimary(context);
+
     return ChoiceChip(
       label: Text(label),
       avatar: Icon(
         icon,
         size: 18,
-        color: selected
-            ? WellbeingTheme.indigo
-            : WellbeingDecor.textSecondary(context),
+        color: selected ? selectedTextColor : WellbeingDecor.textSecondary(context),
       ),
       selected: selected,
       onSelected: (_) => onTap(),
-      selectedColor: const Color(0xFFE0E7FF),
+      showCheckmark: false,
+      selectedColor: isDark ? const Color(0xFF312E81) : const Color(0xFFE0E7FF),
       backgroundColor: WellbeingDecor.tintedSurface(context),
       side: BorderSide(color: Theme.of(context).dividerColor),
       labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-        color: WellbeingDecor.textPrimary(context),
+        color: selected ? selectedTextColor : unselectedTextColor,
         fontSize: 13,
       ),
     );

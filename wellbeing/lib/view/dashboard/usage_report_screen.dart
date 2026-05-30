@@ -226,7 +226,7 @@ class _UsageReportScreenState extends State<UsageReportScreen> {
       _ReportSignal(
         label: 'Age',
         value: '${controller.featureValue('age').round()} yrs',
-        helper: 'Included in the prediction',
+        helper: 'Included in the balance insight',
         icon: Icons.cake_rounded,
       ),
       _ReportSignal(
@@ -237,23 +237,23 @@ class _UsageReportScreenState extends State<UsageReportScreen> {
       ),
       _ReportSignal(
         label: 'Stress Level',
-        value:
-            '${controller.featureValue('stress_level').toStringAsFixed(1)}/10',
+        value: _formatStress(controller.featureValue('stress_level')),
         helper: _impactForStress(controller.featureValue('stress_level')),
         icon: Icons.spa_rounded,
       ),
       _ReportSignal(
-        label: 'Work Hours',
+        label: 'Work/Study Hours',
         value:
             '${controller.featureValue('work_study_hours').toStringAsFixed(1)} h',
         helper: 'Part of your balance profile',
         icon: Icons.school_rounded,
       ),
       _ReportSignal(
-        label: 'Academic Impact',
-        value:
-            '${controller.featureValue('academic_impact').toStringAsFixed(1)}/10',
-        helper: _impactForStress(controller.featureValue('academic_impact')),
+        label: 'Work/Study Impact',
+        value: _formatAcademicImpact(controller.featureValue('academic_impact')),
+        helper: _impactForAcademicImpact(
+          controller.featureValue('academic_impact'),
+        ),
         icon: Icons.trending_up_rounded,
       ),
     ];
@@ -374,9 +374,25 @@ class _UsageReportScreenState extends State<UsageReportScreen> {
   }
 
   String _impactForStress(double value) {
-    if (value >= 7) return 'Higher stress signal';
-    if (value >= 4) return 'Moderate stress signal';
+    if (value >= 2) return 'Higher stress signal';
+    if (value >= 1) return 'Moderate stress signal';
     return 'Lighter stress signal';
+  }
+
+  String _impactForAcademicImpact(double value) {
+    return value >= 1
+        ? 'Phone use may be disrupting focus'
+        : 'Phone use is not disrupting focus';
+  }
+
+  String _formatStress(double value) {
+    if (value >= 2) return 'High';
+    if (value >= 1) return 'Medium';
+    return 'Low';
+  }
+
+  String _formatAcademicImpact(double value) {
+    return value >= 1 ? 'Yes' : 'No';
   }
 
   String _impactForPickups(double value) {

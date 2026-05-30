@@ -4,11 +4,11 @@ import 'package:get/get.dart';
 import 'package:wellbeing/util/theme/wellbeing_theme.dart';
 
 import '../controller/ai_controller.dart';
-import '../navigation_menu.dart';
 import '../services/category_service.dart';
 import '../services/usage_feature_service.dart';
 import 'dashboard/ai_analysis_screen.dart';
 import 'dashboard/ai_module_widgets.dart';
+import 'insights/insights_screen.dart';
 import 'permission_screen.dart';
 
 class ResultScreen extends StatelessWidget {
@@ -19,7 +19,7 @@ class ResultScreen extends StatelessWidget {
     final controller = Get.find<AIController>();
 
     return AiModuleScaffold(
-      title: 'Prediction Result',
+      title: 'Digital Balance Result',
       subtitle:
           'A calm snapshot of your current digital wellbeing, based on the information you chose to share with the app.',
       showBack: false,
@@ -48,7 +48,7 @@ class ResultScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             AiStatusBadge(
-                              label: '${controller.riskCategory} support need',
+                              label: controller.balanceSignalLabel,
                               color: riskColor,
                             ),
                             const SizedBox(height: 14),
@@ -75,7 +75,7 @@ class ResultScreen extends StatelessWidget {
                                   label: 'Source',
                                   value: controller.hasSmartTrackingData
                                       ? 'Smart Tracking'
-                                      : 'Manual Assessment',
+                                      : 'Manual Check-in',
                                 ),
                               ],
                             ),
@@ -118,7 +118,7 @@ class ResultScreen extends StatelessWidget {
                     children: [
                       const AiSectionTitle(
                         icon: Icons.psychology_alt_rounded,
-                        title: 'Prediction Snapshot',
+                        title: 'Balance Snapshot',
                         color: AiModulePalette.teal,
                       ),
                       const SizedBox(height: 16),
@@ -127,13 +127,13 @@ class ResultScreen extends StatelessWidget {
                         runSpacing: 12,
                         children: [
                           AiMetricPill(
-                            label: 'Current risk estimate',
+                            label: 'Digital balance score',
                             value:
                                 '${(controller.riskScore.value * 100).round()}%',
                           ),
                           AiMetricPill(
-                            label: 'Current level',
-                            value: controller.riskCategory,
+                            label: 'Balance state',
+                            value: controller.balanceCategory,
                           ),
                           if (controller.lastAnalyzedAt.value != null)
                             AiMetricPill(
@@ -166,9 +166,9 @@ class ResultScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     AiSecondaryButton(
-                      label: 'Go to Dashboard',
+                      label: 'Open Insights',
                       onPressed: () {
-                        Get.offAll(() => const NavigationMenu(initialIndex: 1));
+                        Get.to(() => const InsightsScreen());
                       },
                     ),
                   ],

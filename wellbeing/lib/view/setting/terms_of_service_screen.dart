@@ -41,7 +41,7 @@ class TermsOfServiceScreen extends StatelessWidget {
                 lines: [
                   'The app offers general wellbeing guidance',
                   'It is not a replacement for professional medical or mental health care',
-                  'Predictions and recommendations are meant to support reflection, not make decisions for you',
+                  'Insights and recommendations are meant to support reflection, not make decisions for you',
                 ],
               ),
             ),

@@ -102,9 +102,9 @@ class HiveService {
       'work_study_hours':
           userBox.get('profile_work_study_hours', defaultValue: 4.0) as double,
       'stress_level':
-          userBox.get('profile_stress_level', defaultValue: 5.0) as double,
+          userBox.get('profile_stress_level', defaultValue: 1.0) as double,
       'academic_impact':
-          userBox.get('profile_academic_impact', defaultValue: 5.0) as double,
+          userBox.get('profile_academic_impact', defaultValue: 0.0) as double,
     };
   }
 
@@ -251,4 +251,180 @@ class HiveService {
       log('Cleared stored profile data');
     }
   }
+
+  String getWellbeingGoal() {
+    _ensureReady();
+    return userBox.get(
+      'wellbeingGoal',
+      defaultValue: 'build_balance',
+    ) as String;
+  }
+
+  void saveWellbeingGoal(String value) {
+    saveUser('wellbeingGoal', value);
+  }
+
+  double getDailyScreenTimeTarget() {
+    _ensureReady();
+    return (userBox.get('dailyScreenTimeTarget', defaultValue: 4.0) as num)
+        .toDouble();
+  }
+
+  void saveDailyScreenTimeTarget(double value) {
+    saveUser('dailyScreenTimeTarget', value);
+  }
+
+  double getFocusHoursTarget() {
+    _ensureReady();
+    return (userBox.get('focusHoursTarget', defaultValue: 3.0) as num)
+        .toDouble();
+  }
+
+  void saveFocusHoursTarget(double value) {
+    saveUser('focusHoursTarget', value);
+  }
+
+  bool getReduceNightUsageGoal() {
+    return getBool('reduceNightUsageGoal', defaultValue: true);
+  }
+
+  void saveReduceNightUsageGoal(bool value) {
+    saveBool('reduceNightUsageGoal', value);
+  }
+
+  bool getReminderEnabled() {
+    return getBool('wellbeingReminderEnabled', defaultValue: false);
+  }
+
+  void saveReminderEnabled(bool value) {
+    saveBool('wellbeingReminderEnabled', value);
+  }
+
+  bool getNotificationsEnabled() {
+    return getBool('notificationsEnabled', defaultValue: true);
+  }
+
+  void saveNotificationsEnabled(bool value) {
+    saveBool('notificationsEnabled', value);
+  }
+
+  TimeOfDayValue getReminderTime() {
+    _ensureReady();
+    return TimeOfDayValue(
+      hour: (userBox.get('wellbeingReminderHour', defaultValue: 20) as num)
+          .toInt(),
+      minute: (userBox.get('wellbeingReminderMinute', defaultValue: 30) as num)
+          .toInt(),
+    );
+  }
+
+  void saveReminderTime({required int hour, required int minute}) {
+    saveUser('wellbeingReminderHour', hour);
+    saveUser('wellbeingReminderMinute', minute);
+  }
+
+  String getSelectedCoachChallenge() {
+    _ensureReady();
+    return userBox.get('selectedCoachChallenge', defaultValue: '') as String;
+  }
+
+  void saveSelectedCoachChallenge(String value) {
+    saveUser('selectedCoachChallenge', value);
+  }
+
+  List<String> getCompletedCoachDates() {
+    _ensureReady();
+    final raw = userBox.get('completedCoachDates', defaultValue: const []);
+    if (raw is! List) {
+      return const [];
+    }
+    return raw.map((entry) => entry.toString()).toList()..sort();
+  }
+
+  void saveCompletedCoachDates(List<String> dates) {
+    _ensureReady();
+    final normalized = dates.toSet().toList()..sort();
+    userBox.put('completedCoachDates', normalized);
+    if (kDebugMode) {
+      log('Saved coach completion dates: $normalized');
+    }
+  }
+
+  bool hasCompletedCoachChallengeOn(String dateKey) {
+    _ensureReady();
+    return getCompletedCoachDates().contains(dateKey);
+  }
+
+  bool markCoachChallengeCompletedOn(String dateKey) {
+    _ensureReady();
+    final dates = getCompletedCoachDates();
+    if (dates.contains(dateKey)) {
+      return false;
+    }
+    dates.add(dateKey);
+    saveCompletedCoachDates(dates);
+    return true;
+  }
+
+  int getCoachCurrentStreak() {
+    _ensureReady();
+    final dates = getCompletedCoachDates();
+    if (dates.isEmpty) {
+      return 0;
+    }
+
+    final completed = dates
+        .map(DateTime.tryParse)
+        .whereType<DateTime>()
+        .map((date) => DateTime(date.year, date.month, date.day))
+        .toSet()
+        .toList()
+      ..sort((a, b) => b.compareTo(a));
+
+    if (completed.isEmpty) {
+      return 0;
+    }
+
+    final today = DateTime.now();
+    var cursor = DateTime(today.year, today.month, today.day);
+    var streak = 0;
+
+    if (!completed.contains(cursor)) {
+      final yesterday = cursor.subtract(const Duration(days: 1));
+      if (!completed.contains(yesterday)) {
+        return 0;
+      }
+      cursor = yesterday;
+    }
+
+    while (completed.contains(cursor)) {
+      streak++;
+      cursor = cursor.subtract(const Duration(days: 1));
+    }
+
+    return streak;
+  }
+
+  int getCoachCompletedThisWeek() {
+    _ensureReady();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final weekdayOffset = today.weekday - DateTime.monday;
+    final weekStart = today.subtract(Duration(days: weekdayOffset));
+    final weekEnd = weekStart.add(const Duration(days: 7));
+
+    return getCompletedCoachDates()
+        .map(DateTime.tryParse)
+        .whereType<DateTime>()
+        .map((date) => DateTime(date.year, date.month, date.day))
+        .where((date) => !date.isBefore(weekStart) && date.isBefore(weekEnd))
+        .length;
+  }
+}
+
+class TimeOfDayValue {
+  const TimeOfDayValue({required this.hour, required this.minute});
+
+  final int hour;
+  final int minute;
 }

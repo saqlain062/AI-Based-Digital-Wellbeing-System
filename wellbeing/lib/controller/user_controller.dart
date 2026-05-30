@@ -6,7 +6,7 @@ class UserInputController extends GetxController {
   // ==========================
 
   var age = 20.0.obs;
-  var gender = 1.0.obs; // 0=female, 1=male
+  var gender = 1.0.obs; // 0=female, 1=male, 2=other
 
   var sleepHours = 7.0.obs;
   var workStudyHours = 4.0.obs;
@@ -15,8 +15,8 @@ class UserInputController extends GetxController {
   var appOpens = 30.0.obs;
   var weekendScreen = 5.0.obs;
 
-  var stressLevel = 5.0.obs;
-  var academicImpact = 5.0.obs;
+  var stressLevel = 1.0.obs; // 0=low, 1=medium, 2=high
+  var academicImpact = 0.0.obs; // 0=no, 1=yes
 
   // ==========================
   // 🔹 CONVERT TO MODEL INPUT

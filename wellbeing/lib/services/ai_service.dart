@@ -45,13 +45,13 @@ class AIService {
     final List<List<double>>? probabilities = (rawValue as List?)?.map((outer) {
       return (outer as List).map((inner) => (inner as num).toDouble()).toList();
     }).toList();
-    final double addictionProb = probabilities![0][1];
+    final double balanceSupportProbability = probabilities![0][1];
 
     // Cleanup to prevent memory leaks (Gap 6: Efficiency)
     inputOrt.release();
     runOptions.release();
     outputs?.forEach((e) => e?.release());
 
-    return addictionProb;
+    return balanceSupportProbability;
   }
 }

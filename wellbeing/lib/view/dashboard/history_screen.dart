@@ -34,7 +34,7 @@ class HistoryScreen extends StatelessWidget {
             _buildMilestone(
               'Mar 28',
               'Wellbeing Champion',
-              'Score above 75 for 2 weeks',
+              'Balance score above 75 for 2 weeks',
             ),
           ],
         ),

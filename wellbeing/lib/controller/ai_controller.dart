@@ -60,11 +60,20 @@ class AIController extends GetxController {
   };
 
   OrtSession? _session;
+  Future<void>? _startupFuture;
 
   @override
   void onReady() {
     super.onReady();
-    _initModel();
+    ensureReady();
+  }
+
+  Future<void> ensureReady() {
+    return _startupFuture ??= _prepareController();
+  }
+
+  Future<void> _prepareController() async {
+    await _initModel();
     _loadSavedProfile();
     _loadSavedAnalysis();
   }
@@ -143,10 +152,10 @@ class AIController extends GetxController {
         'work_study_hours',
         onboardingInputs['work_study_hours'] ?? 4.0,
       );
-      setFeature('stress_level', onboardingInputs['stress_level'] ?? 5.0);
+      setFeature('stress_level', onboardingInputs['stress_level'] ?? 1.0);
       setFeature(
         'academic_work_impact',
-        onboardingInputs['academic_impact'] ?? 5.0,
+        onboardingInputs['academic_impact'] ?? 0.0,
       );
     } catch (e) {
       if (kDebugMode) {
@@ -195,10 +204,24 @@ class AIController extends GetxController {
   }
 
   void setFeature(String key, double value) {
-    final index = featureIndex[_resolveFeatureKey(key)];
+    final resolvedKey = _resolveFeatureKey(key);
+    final index = featureIndex[resolvedKey];
     if (index == null) return;
 
-    features[index] = value;
+    features[index] = _normalizeFeatureValue(resolvedKey, value);
+  }
+
+  double _normalizeFeatureValue(String key, double value) {
+    if (key == 'stress_level') {
+      if (value >= 7) return 2.0;
+      if (value >= 3) return 1.0;
+      return value.round().clamp(0, 2).toDouble();
+    }
+    if (key == 'academic_work_impact') {
+      if (value > 1) return 1.0;
+      return value.round().clamp(0, 1).toDouble();
+    }
+    return value;
   }
 
   double featureValue(String key) {
@@ -259,7 +282,16 @@ class AIController extends GetxController {
     );
   }
 
-  Future<void> runInference() async {
+  Future<void> refreshSmartTrackingUsageSnapshot() async {
+    if (!hasSmartTrackingData) return;
+
+    await loadUsage();
+    _saveAnalysis();
+  }
+
+  Future<void> runInference({bool showLoading = true}) async {
+    await ensureReady();
+
     if (!isModelLoaded.value) {
       if (kDebugMode) {
         log('Model not loaded');
@@ -268,10 +300,12 @@ class AIController extends GetxController {
     }
 
     isProcessing.value = true;
-    await EasyLoading.show(
-      status: 'Building your wellbeing insight...',
-      maskType: EasyLoadingMaskType.black,
-    );
+    if (showLoading) {
+      await EasyLoading.show(
+        status: 'Building your wellbeing insight...',
+        maskType: EasyLoadingMaskType.black,
+      );
+    }
 
     try {
       final inputData = Float32List.fromList(features);
@@ -304,12 +338,16 @@ class AIController extends GetxController {
       if (kDebugMode) {
         log('Inference error: $e');
       }
-      EasyLoading.showError(
-        'We could not finish that just now. Please try again in a moment.',
-      );
+      if (showLoading) {
+        EasyLoading.showError(
+          'We could not finish that just now. Please try again in a moment.',
+        );
+      }
     } finally {
       isProcessing.value = false;
-      EasyLoading.dismiss();
+      if (showLoading) {
+        EasyLoading.dismiss();
+      }
     }
   }
 
@@ -322,7 +360,41 @@ class AIController extends GetxController {
     );
 
     recommendationContext.value = result.label;
-    recommendation.value = result.message;
+    recommendation.value = _personalizedRecommendation(result.message);
+  }
+
+  String _personalizedRecommendation(String baseMessage) {
+    final goal = HiveService.instance.getWellbeingGoal();
+    final dailyHours = featureValue('daily_screen_time_hours');
+    final socialHours = featureValue('social_media_hours');
+    final gamingHours = featureValue('gaming_hours');
+    final pickups = featureValue('app_opens_per_day');
+    final notifications = featureValue('notifications_per_day');
+    final sleepHours = featureValue('sleep_hours');
+    final target = HiveService.instance.getDailyScreenTimeTarget();
+    final focusTarget = HiveService.instance.getFocusHoursTarget();
+
+    final goalMessage = switch (goal) {
+      'sleep_better' => sleepHours < 7 || dailyHours > target
+          ? 'For your sleep goal, try making the last 30 minutes before bed a lower-stimulation window.'
+          : 'Your sleep goal looks supported today. Keep your evening routine calm and predictable.',
+      'focus_work_study' => pickups >= 35 || notifications >= 35
+          ? 'For focus, start with one protected study/work block and reduce notification checks during that time. Your current focus target is ${focusTarget.toStringAsFixed(1)} hours.'
+          : 'Your focus signals look steady. Keep using intentional check-in moments instead of quick pickups toward your ${focusTarget.toStringAsFixed(1)} hour focus target.',
+      'reduce_distractions' => socialHours + gamingHours >= 2
+          ? 'For fewer distractions, choose one social or entertainment app to pause during your next focus block.'
+          : 'Your distraction pattern looks lighter today. Keep your most attention-heavy apps away from your first work block.',
+      'understand_habits' =>
+        'For understanding your habits, check which app category is most active and compare it with how useful that time felt.',
+      _ => dailyHours > target
+          ? 'For healthier balance, try one short phone-free reset before your next long session.'
+          : 'Your balance goal looks steady today. Keep the small routines that are already working.',
+    };
+
+    if (baseMessage.trim().isEmpty) {
+      return goalMessage;
+    }
+    return '$baseMessage\n\n$goalMessage';
   }
 
   void _saveAnalysis() {
@@ -375,14 +447,40 @@ class AIController extends GetxController {
     return 'Low';
   }
 
+  String get balanceCategory {
+    if (riskScore.value >= 0.7) return 'High usage pattern';
+    if (riskScore.value >= 0.3) return 'Moderate pattern';
+    return 'Balanced';
+  }
+
+  String get balanceSignalLabel {
+    if (riskScore.value >= 0.7) return 'High usage pattern';
+    if (riskScore.value >= 0.3) return 'Moderate digital balance';
+    return 'Healthy digital balance';
+  }
+
+  String get wellbeingGoal {
+    return HiveService.instance.getWellbeingGoal();
+  }
+
+  String get wellbeingGoalLabel {
+    return switch (wellbeingGoal) {
+      'reduce_distractions' => 'Reduce distractions',
+      'sleep_better' => 'Sleep better',
+      'focus_work_study' => 'Focus during study/work',
+      'understand_habits' => 'Understand app habits',
+      _ => 'Build healthier phone balance',
+    };
+  }
+
   String get supportiveMessage {
     if (riskScore.value >= 0.7) {
-      return 'Your current habits show signs of overuse. Small changes can help you feel more in control.';
+      return 'Your phone use looks higher than usual today. One small change can still make the day feel more manageable.';
     }
     if (riskScore.value >= 0.3) {
-      return 'There is some room to rebalance your habits, and a few thoughtful adjustments could go a long way.';
+      return 'Your phone habits look manageable today, with a little room to rebalance one or two pressure points.';
     }
-    return 'Your habits suggest a healthy balance right now. Staying consistent matters more than being perfect.';
+    return 'Your habits suggest a healthy balance today. Staying consistent matters more than being perfect.';
   }
 
   double get confidenceScore {

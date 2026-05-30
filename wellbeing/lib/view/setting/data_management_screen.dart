@@ -104,7 +104,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
             spacing: 12,
             runSpacing: 12,
             children: [
-              AiMetricPill(label: 'Latest result', value: latestScore),
+              AiMetricPill(label: 'Latest balance score', value: latestScore),
               AiMetricPill(label: 'History saved', value: '$historyCount days'),
               AiMetricPill(label: 'Updated', value: latestDate),
             ],
@@ -147,7 +147,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
             title: 'Latest analysis result',
             subtitle: lastAnalysis == null
                 ? 'No saved result yet.'
-                : 'Your latest prediction, confidence, and recommendation are ready to reopen.',
+                : 'Your latest balance score, confidence, and recommendation are ready to reopen.',
           ),
           const SizedBox(height: 12),
           _DataRow(
@@ -268,7 +268,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
           ),
           const SizedBox(height: 14),
           Text(
-            'This clears the saved prediction, personal setup values, stored feature values, and trend history on this device. You will be guided back through setup so a new result can be calculated from fresh inputs.',
+            'This clears the saved balance score, personal setup values, stored feature values, and trend history on this device. You will be guided back through setup so a new result can be calculated from fresh inputs.',
             style: TextStyle(
               color: AiModulePalette.textSecondary(context),
               fontSize: 14,
@@ -352,7 +352,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
     final confirmed = await _showConfirmationDialog(
       title: 'Reset local insights?',
       message:
-          'This will clear the saved prediction, personal setup inputs, stored feature values, and daily history from this device. You will return to setup to calculate a fresh result.',
+          'This will clear the saved balance score, personal setup inputs, stored feature values, and daily history from this device. You will return to setup to calculate a fresh result.',
       confirmLabel: 'Reset',
     );
     if (!confirmed) return;

@@ -30,17 +30,18 @@ class UsageFeatureService {
         log("📦 Apps: ${apps.length}");
       }
 
-      // 2️⃣ Usage permission
+      // Usage permission is requested only from PermissionScreen. Data reads
+      // quietly return empty values when access is not available.
       bool granted = await UsageStats.checkUsagePermission() ?? false;
 
       if (!granted) {
-        await UsageStats.grantUsagePermission();
         return _emptyResult();
       }
 
-      // 3️⃣ Time range (🔥 increased for better data)
+      // 3️⃣ Time range for today's usage. The model expects a daily value,
+      // and the dashboard chart stores one snapshot per calendar day.
       final end = DateTime.now();
-      final start = end.subtract(const Duration(days: 3));
+      final start = DateTime(end.year, end.month, end.day);
 
       if (kDebugMode) {
         log("📦 Start: $start");
@@ -189,7 +190,6 @@ class UsageFeatureService {
 
       bool granted = await UsageStats.checkUsagePermission() ?? false;
       if (!granted) {
-        await UsageStats.grantUsagePermission();
         return [];
       }
 
